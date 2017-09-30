@@ -9,6 +9,10 @@ RegisterView.BT_AGREEMENT= 3
 RegisterView.CBT_AGREEMENT = 4
 RegisterView.BT_HUOQVYZM = 5
 
+RegisterView.BT_YHYS=6
+RegisterView.BT_YHYSExit=7
+RegisterView.CBT_RECORD=8
+
 RegisterView.bAgreement = true
 local ExternalFun = appdf.req(appdf.EXTERNAL_SRC .. "ExternalFun")
 local BindFrame = appdf.req(appdf.CLIENT_SRC.."plaza.models.BindPhoneFrame")
@@ -43,7 +47,7 @@ function RegisterView:ctor()
     local editBoxBg = cc.Scale9Sprite:create("Logon/text_field_frame.png")
     	:setCapInsets(CCRectMake(10,10,60,32))
     	:setContentSize(cc.size(560, 70))
-    	:setPosition(PosX+260,540)
+    	:setPosition(PosX+260,545)
     self:addChild(editBoxBg)
     -- 手机号
 	--[[
@@ -52,7 +56,7 @@ function RegisterView:ctor()
 		:addTo(self)
 	--]]
  	self.edit_Phone = ccui.EditBox:create(cc.size(490,67), "")
-		:move(PosX+260,540)
+		:move(PosX+260,545)
 		:setAnchorPoint(cc.p(0.5,0.5))
 		:setFontName("fonts/round_body.ttf")
 		:setPlaceholderFontName("fonts/round_body.ttf")
@@ -70,11 +74,11 @@ function RegisterView:ctor()
     local editBoxBg = cc.Scale9Sprite:create("Logon/text_field_frame.png")
     	:setCapInsets(CCRectMake(10,10,60,32))
     	:setContentSize(cc.size(560, 70))
-    	:setPosition(PosX+260,445)
+    	:setPosition(PosX+260,450)
     self:addChild(editBoxBg)
 	--账号输入
     self.edit_Account = ccui.EditBox:create(cc.size(490,67),"")
-		:move(PosX+260,445)
+		:move(PosX+260,450)
 		:setAnchorPoint(cc.p(0.5,0.5))
 		:setFontName("fonts/round_body.ttf")
 		:setPlaceholderFontName("fonts/round_body.ttf")
@@ -112,11 +116,11 @@ function RegisterView:ctor()
     local editBoxBg = cc.Scale9Sprite:create("Logon/text_field_frame.png")
     	:setCapInsets(CCRectMake(10,10,60,32))
     	:setContentSize(cc.size(560, 70))
-    	:setPosition(PosX+260,260)
+    	:setPosition(PosX+260,265)
     self:addChild(editBoxBg)
 	--密码输入	
 	self.edit_Password = ccui.EditBox:create(cc.size(490,67),"")
-		:move(PosX+260,260)
+		:move(PosX+260,265)
 		:setAnchorPoint(cc.p(0.5,0.5))
 		:setFontName("fonts/round_body.ttf")
 		:setPlaceholderFontName("fonts/round_body.ttf")
@@ -146,7 +150,7 @@ function RegisterView:ctor()
 
 	--注册
     local btnZhuceBg = display.newSprite("Regist/lianglvbtn.png")
-		:move(510, 160)
+		:move(510, 130)
 		:setScale(1.2)
 		:addTo(self)
     newBtnSize = btnZhuceBg:getContentSize()
@@ -158,7 +162,7 @@ function RegisterView:ctor()
 
     -- 取消
     local btnZhuceBg = display.newSprite("Regist/lanlvbtn.png")
-		:move(880, 160)
+		:move(880, 130)
 		:setScale(1.2)
 		:addTo(self)
     newBtnSize = btnZhuceBg:getContentSize()
@@ -168,6 +172,31 @@ function RegisterView:ctor()
 		:addTo(btnZhuceBg)
 		:addTouchEventListener(btcallback)
 
+	--用户隐私
+	self.cbt_Record = ccui.CheckBox:create("Logon/rem_password_button.png","","Logon/choose_button.png","","")
+		:move(PosX+10,195)
+		:setTag(RegisterView.CBT_RECORD)
+		:setSelected(true)
+		:addTo(self)
+
+	local yhysbtn=ccui.Button:create("Regist/xieyi1.png","Regist/xieyi1.png")
+	yhysbtn:move(PosX+120,195)
+	yhysbtn:setTag(RegisterView.BT_YHYS)
+	yhysbtn:addTouchEventListener(btcallback)
+	yhysbtn:addTo(self)
+
+	--加载csb资源
+	local rootLayer, csbNode = ExternalFun.loadRootCSB("Regist/xieyi.csb", self)
+	self.yhys = rootLayer
+	self.yhys:move(yl.WIDTH/2-450,yl.HEIGHT/2-250)
+	self.yhys:setVisible(false)
+
+	ccui.Button:create("public/closebtn.png","public/closebtn.png")
+		:move(yl.WIDTH/2+450,yl.HEIGHT/2+250)
+		:setTag(RegisterView.BT_YHYSExit)
+		:setVisible(false)
+		:addTo(self)
+		:addTouchEventListener(btcallback)
 
     --网络回调
     local bindCallBack = function(result,message)
@@ -234,7 +263,22 @@ function RegisterView:onButtonClickedEvent(tag,ref)
         self:onQueryPhoneCode()
 	elseif tag == RegisterView.BT_AGREEMENT then
 		self:getParent():getParent():onShowService()
+	elseif tag == RegisterView.BT_YHYS then
+		self.yhys:setVisible(true)
+		self:getChildByTag(RegisterView.BT_YHYSExit):setVisible(true)
+	elseif tag == RegisterView.BT_YHYSExit then
+		self.yhys:setVisible(false)
+		self:getChildByTag(RegisterView.BT_YHYSExit):setVisible(false)
 	elseif tag == RegisterView.BT_REGISTER then
+
+		--隐身协议
+
+		local bysxy = self:getChildByTag(RegisterView.CBT_RECORD):isSelected()
+		if false==bysxy then
+            showToast( self, "请同意隐私协议!", 2 )
+            return
+		end
+
         local phone = string.gsub(self.edit_Phone:getText(), "[.]", "")
         if ( phone == "" or 11 ~= #phone ) then
             showToast( self, "请正确输入11位手机号码!", 2 )

@@ -466,6 +466,7 @@ function HeadSprite:initHeadSprite( useritem )
 		self:setContentSize(self.m_spRender:getContentSize())
 	end	
 	self.m_fScale = self.m_headSize / SYS_HEADSIZE
+	print(" self.m_fScale self.m_headSize SYS_HEADSIZE ==",self.m_fScale,self.m_headSize,SYS_HEADSIZE)
 	self:setScale(self.m_fScale)
 
 	return self.m_spRender

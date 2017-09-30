@@ -24,6 +24,7 @@ LogonView.DG_QUERYEXIT 	= 12
 
 
 
+
 function LogonView:ctor(serverConfig)
 	local this = self
 	self:setContentSize(yl.WIDTH,yl.HEIGHT)
@@ -131,7 +132,7 @@ function LogonView:ctor(serverConfig)
 		:addTo(self)
 
 	--微信登录
-    local btnZhanghaodlBg = display.newSprite("Logon/lanlvbtn.png")
+    local btnZhanghaodlBg= display.newSprite("Logon/lanlvbtn.png")
 		:move(880, 280)
 		:setScale(1)
         :setName("Parentbtn_2")
@@ -177,6 +178,27 @@ function LogonView:ctor(serverConfig)
 	self:refreshBtnList()
 end
 
+--是否隐藏微信登录按钮
+function LogonView:isWXPInstalled()
+	--平台判定
+	local targetPlatform = cc.Application:getInstance():getTargetPlatform()
+	if (cc.PLATFORM_OS_IPHONE == targetPlatform) or (cc.PLATFORM_OS_IPAD == targetPlatform) or (cc.PLATFORM_OS_ANDROID == targetPlatform) then
+		--隐藏
+		local isInstalled =MultiPlatform:getInstance():isPlatformInstalled(yl.ThirdParty.WECHAT)
+		print(isInstalled)
+		if true == isInstalled then
+			print("显示微信登录按钮===========1 已经安装 isInstalled")
+			self:getChildByName("Parentbtn_2"):setVisible(true)
+		else
+			print("隐藏微信登录按钮===========1 isInstalled")
+			self:getChildByName("Parentbtn_2"):setVisible(false)
+		end
+	else
+		--隐藏
+		print("隐藏微信登录按钮===========2")		
+		self:getChildByName("Parentbtn_2"):setVisible(false)
+	end
+end
 function LogonView:refreshBtnList( )
 	for i = 1, 3 do
 		local btn = self:getChildByName("btn_" .. i)
@@ -226,6 +248,8 @@ function LogonView:refreshBtnList( )
             end
 		end
 	end
+	--微信按钮
+	self:isWXPInstalled()
 end
 
 function LogonView:onEditEvent(name, editbox)
