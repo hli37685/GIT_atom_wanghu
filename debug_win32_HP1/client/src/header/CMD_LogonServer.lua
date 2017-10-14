@@ -63,11 +63,23 @@ login.SUB_GP_CHECKIN_RESULT				= 223								--签到结果
 login.SUB_GP_TASK_LOAD					= 240								--任务加载
 login.SUB_GP_TASK_TAKE					= 241								--任务领取
 login.SUB_GP_TASK_REWARD				= 242								--任务奖励
-login.SUB_GP_TASK_GIVEUP				= 243								--任务放弃
-login.SUB_GP_TASK_INFO					= 250								--任务信息
-login.SUB_GP_TASK_LIST					= 251								--任务信息
-login.SUB_GP_TASK_RESULT				= 252								--任务结果
-login.SUB_GP_TASK_GIVEUP_RESULT			= 253								--放弃结果
+login.SUB_GP_TASK_GIVEUP				= 247								--任务放弃
+login.SUB_GP_TASK_INFO					= 243								--任务信息
+login.SUB_GP_TASK_LIST					= 244								--任务信息
+login.SUB_GP_TASK_RESULT				= 245								--任务结果
+login.SUB_GP_TASK_GIVEUP_RESULT			= 246								--放弃结果
+
+--背包寄售行
+login.SUB_GP_GOODS_QUERY                = 250                               --查询背包
+login.SUB_GP_GOODS_LIST                 = 251                               --背包信息
+login.SUB_GP_GOODSSHOP_QUERY            = 252                               --加载寄售信息
+login.SUB_GP_GOODSSHOP_LIST             = 253                               --寄售信息
+login.SUB_GP_GOODS_PAY                  = 254                               --物品交易
+login.SUB_GP_GOODS_RESULT               = 255                               --交易结果
+--login.SUB_GP_GOODSSHOPLIST_QUERY        = 256                               --查询交易记录
+--login.SUB_GP_GOODSSHOPLIST_LIST         = 257                               --交易记录
+login.SUB_GP_GOODS_COMPOUND				=256								--道具合成
+login.SUB_GP_GOODS_CHANGE				=257								--道具兑换
 
 --低保服务
 login.SUB_GP_BASEENSURE_LOAD			= 260								--加载低保
@@ -84,7 +96,7 @@ login.SUB_GP_GROWLEVEL_QUERY			= 300								--查询等级
 login.SUB_GP_GROWLEVEL_PARAMETER		= 301								--等级参数
 login.SUB_GP_GROWLEVEL_UPGRADE			= 302								--等级升级
 
---兑换服务
+--兑换服务 特权商城
 login.SUB_GP_EXCHANGE_QUERY				= 320								--兑换参数
 login.SUB_GP_EXCHANGE_PARAMETER			= 321								--兑换参数
 login.SUB_GP_PURCHASE_MEMBER			= 322								--购买会员
@@ -408,5 +420,173 @@ login.CMD_MB_Forget_PW_Reset =
 	{t = "tchar", k = "szMachineID", s = yl.LEN_MACHINE_ID},
 }
 
+
+----------------
+----------------
+--加载背包
+login.CMD_GP_GoodsLoadInfo = 
+{
+    -- 用户标识
+    {k = "dwUserID", t = "dword"},							
+    -- 用户密码
+    { t = "tchar", k = "szPassword", s = yl.LEN_PASSWORD}, 	
+}
+
+--背包信息
+login.CMD_GP_GoodsInfo = 
+{
+    -- 物品1数量
+    {k = "wGood1", t = "dword"},	
+    -- 物品2数量
+    {k = "wGood2", t = "dword"},	
+    -- 物品3数量
+    {k = "wGood3", t = "dword"},	
+    -- 物品4数量
+    {k = "wGood4", t = "dword"},	
+    -- 物品5数量
+    {k = "wGood5", t = "dword"},	
+    -- 物品6数量
+    {k = "wGood6", t = "dword"},							
+}
+
+--加载交易大厅信息《这个地方参数可能会有点晕，最好咨询下服务端》
+login.CMD_GP_GoodsshopLoadInfo = 
+{
+    -- 用户标识
+    {k = "dwUserID", t = "dword"},							
+    -- 用户密码
+    { t = "tchar", k = "szPassword", s = yl.LEN_PASSWORD}, 	
+    -- 要查询用户gameID，也可以是自己的
+    {k = "dwGameID", t = "dword"},	
+    -- 交易状态
+    {k = "cbTaskStatus", t = "byte"},									
+}
+
+-- 每条的出售交易信息状态 
+login.tagGoodsshopStatus = 
+{
+    -- 条目标识
+    {k = "ID", t = "dword"},	
+    -- 出售用户标识
+    {k = "dwBYUserID", t = "dword"},	
+    -- 出售用户ID
+    {k = "dwBYGameID", t = "dword"},	
+    -- 购买用户标识
+    {k = "dwToUserID", t = "dword"},	
+    -- 购买用户ID
+    {k = "dwToGameID", t = "dword"},	
+    -- 交易状态
+    {k = "cbShopStatus", t = "byte"},	
+    -- 商品标识
+    {k = "wShopID", t = "word"},	
+    -- 商品数量
+    {k = "wCountID", t = "dword"},	
+    -- 需要多少金币
+    {k = "lGOODScore", t = "score"},	
+    -- 出售期时间
+    {k = "GoodsshopTime", t = "score"},	
+    -- 购买时间
+    {k = "GoodsshopbuyTime", t = "score"},	
+}
+
+--交易大厅信息
+login.CMD_GP_GoodsshopInfo = 
+{
+    -- 交易大厅数量
+    {k = "wShopCount", t = "dword"},							
+    -- 出售交易信息
+    {k = "tagGoodsshopStatus", t = "table", d = login.tagGoodsshopStatus}									
+}
+
+-- 每条会员参数
+login.tagMemberParameter = 
+{
+    -- 会员标识
+    {k = "cbMemberOrder", t = "byte"},	
+    -- 会员名称
+    --{ t = "tchar", k = "szMemberName", s = yl.LEN_MEMBER_NAME},
+    { t = "string", k = "szMemberName", s = yl.LEN_MEMBER_NAME},
+    -- 会员价格
+    {k = "lMemberPrice", t = "score"},	
+    -- 赠送游戏币
+    {k = "lPresentScore", t = "score"},	
+}
+
+--购买会员
+login.CMD_GP_PurchaseMember = 
+{
+    -- 用户标识
+    {k = "dwUserID", t = "dword"},
+    -- 会员标识
+    {k = "cbMemberOrder", t = "byte"},
+    -- 购买时间
+    {k = "wPurchaseTime", t = "word"},
+    -- 机器码
+    { t = "tchar", k = "szMachineID", s = yl.LEN_MACHINE_ID},
+}
+
+--操作单条交易
+login.CMD_GP_GoodspayLoadInfo = 
+{
+    -- 用户标识
+    {k = "dwUserID", t = "dword"},							
+    -- 用户密码
+    { t = "tchar", k = "szPassword", s = yl.LEN_PASSWORD}, 	
+    -- 机器码
+    { t = "tchar", k = "szMachineID", s = yl.LEN_MACHINE_ID}, 	
+    -- 命令标识 1为上架，2下架，3购买
+    {k = "wCommandID", t = "word"},		
+    -- 需要多少金币
+    {k = "lGOODScore", t = "score"},		
+    -- 商品标识
+    {k = "wShopID", t = "word"},	
+    -- 商品数量
+    {k = "wCountID", t = "dword"},	
+    -- 操作条数标识
+    {k = "wGoodsshopID", t = "dword"},						
+}
+
+--商品合成
+login.CMD_GP_GoodsCOMPOUNDInfo = 
+{
+    -- 用户标识
+    {k = "dwUserID", t = "dword"},
+    -- 用户密码
+    { t = "tchar", k = "szPassword", s = yl.LEN_PASSWORD},
+    -- 机器码
+    { t = "tchar", k = "szMachineID", s = yl.LEN_MACHINE_ID},
+    -- 物品ID
+    {k = "wGood", t = "word"},
+    -- 数量
+    {k = "wCountID", t = "dword"},
+}
+
+--商品兑换
+login.CMD_GP_GoodschangeInfo = 
+{
+    -- 用户标识
+    {k = "dwUserID", t = "dword"},
+    -- 用户密码
+    { t = "tchar", k = "szPassword", s = yl.LEN_PASSWORD},
+    -- 机器码
+    { t = "tchar", k = "szMachineID", s = yl.LEN_MACHINE_ID},
+    -- 物品ID
+    {k = "wGood", t = "word"},
+    -- 数量
+    {k = "wCountID", t = "dword"},
+}
+
+--操作结果
+login.CMD_GP__GoodspayResult = 
+{
+    --结果信息
+	{k = "bSuccessed", t = "bool"},												
+    -- 命令标识 1为上架，2下架，3购买
+    {k = "wCommandID", t = "word"},		
+    -- 当前金币
+    {k = "lCurrScore", t = "score"},		
+    -- 提示内容
+    {k = "szNotifyContent", t = "string"},				
+}
 
 return login

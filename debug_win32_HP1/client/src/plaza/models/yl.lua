@@ -8,13 +8,13 @@ yl.KIND_ID								= 122
 yl.STATION_ID							= 1
 
 --测试
-yl.LOGONSERVER							= "iostest.16yi.com" --ethj  这个改成iostest.16yi.com
---yl.LOGONSERVER							= "game.16yi.com" --@login_ip
+--yl.LOGONSERVER							= "iostest.16yi.com" --ethj  这个改成iostest.16yi.com
+yl.LOGONSERVER							= "game.16yi.com" --@login_ip
 -- 登陆地址列表
 yl.SERVER_LIST = 
 {
-    "iostest.16yi.com", --ethj  这个改成iostest.16yi.com
---    "game.16yi.com"
+--    "iostest.16yi.com", --ethj  这个改成iostest.16yi.com
+    "game.16yi.com"
     --"120.25.147.47", --@login_ip
 }
 -- 当前地址索引
@@ -86,6 +86,9 @@ yl.SCENE_FAQ							= 33		--常见问题
 yl.SCENE_BINDINGREG						= 34		--绑定注册
 yl.SCENE_KEFU                           = 35		--客服
 yl.SCENE_PHONE                          = 36		--绑定手机
+yl.SCENE_UNDERCARRIAGENOTIFY            = 37		--下架通知
+yl.SCENE_CONSIGNMENT_BUY                = 38        --寄售行购买确认界面
+yl.SCENE_CONSIGNMENT                    = 39        --寄售行寄售确认界面
 
 
 yl.SCENE_EX_END 						= 50
@@ -152,6 +155,7 @@ yl.LEN_SERVER                           = 32            --房间长度
 yl.LEN_TRANS_REMARK						= 32			--转账备注
 yl.LEN_TASK_NAME						= 64			--任务名称
 yl.LEN_PHONE_CODE						= 7     		--验证码长度
+yl.LEN_MEMBER_NAME						= 16     		--会员名称
 
 yl.LEN_MOBILE_PHONE						= 12			--移动电话
 yl.LEN_COMPELLATION						= 16			--真实名字
@@ -222,14 +226,35 @@ yl.SUB_GP_GROWLEVEL_QUERY				= 300			--查询等级
 yl.SUB_GP_GROWLEVEL_PARAMETER			= 301			--等级参数
 yl.SUB_GP_GROWLEVEL_UPGRADE				= 302			--等级升级
 
+--兑换服务 特权商城
+yl.SUB_GP_EXCHANGE_QUERY				= 320			--兑换参数
+yl.SUB_GP_EXCHANGE_PARAMETER			= 321			--兑换参数
+yl.SUB_GP_PURCHASE_MEMBER				= 322			--购买会员
+yl.SUB_GP_PURCHASE_RESULT				= 323			--购买结果
+yl.SUB_GP_EXCHANGE_SCORE_BYINGOT		= 324			--兑换游戏币
+yl.SUB_GP_EXCHANGE_SCORE_BYBEANS		= 325			--兑换游戏币
+yl.SUB_GP_EXCHANGE_RESULT				= 326			--兑换结果
+
 yl.SUB_GP_TASK_LOAD						= 240			--任务加载
 yl.SUB_GP_TASK_TAKE						= 241			--任务领取
 yl.SUB_GP_TASK_REWARD					= 242			--任务奖励
-yl.SUB_GP_TASK_GIVEUP					= 243			--任务放弃
-yl.SUB_GP_TASK_INFO						= 250			--任务信息
-yl.SUB_GP_TASK_LIST						= 251			--任务信息
-yl.SUB_GP_TASK_RESULT					= 252			--任务结果
-yl.SUB_GP_TASK_GIVEUP_RESULT			= 253			--放弃结果
+yl.SUB_GP_TASK_GIVEUP					= 247			--任务放弃
+yl.SUB_GP_TASK_INFO						= 243			--任务信息
+yl.SUB_GP_TASK_LIST						= 244			--任务信息
+yl.SUB_GP_TASK_RESULT					= 245			--任务结果
+yl.SUB_GP_TASK_GIVEUP_RESULT			= 246			--放弃结果
+
+--背包寄售行
+yl.SUB_GP_GOODS_QUERY                   = 250           --查询背包   
+yl.SUB_GP_GOODS_LIST                    = 251           --背包信息
+yl.SUB_GP_GOODSSHOP_QUERY               = 252           --加载寄售信息
+yl.SUB_GP_GOODSSHOP_LIST                = 253           --寄售信息
+yl.SUB_GP_GOODS_PAY                     = 254           --物品交易
+yl.SUB_GP_GOODS_RESULT                  = 255           --交易结果
+--yl.SUB_GP_GOODSSHOPLIST_QUERY           = 256           --查询交易记录
+--yl.SUB_GP_GOODSSHOPLIST_LIST            = 257           --交易记录
+yl.SUB_GP_GOODS_COMPOUND				=256			--道具合成
+yl.SUB_GP_GOODS_CHANGE					=257			--道具兑换
 
 --低保服务
 yl.SUB_GP_BASEENSURE_LOAD				= 260			--加载低保

@@ -358,6 +358,12 @@ function ClientScene:onCreate()
 	btn:setTag(ClientScene.BT_KEFU)
 	btn:addTouchEventListener(btcallback)
 	self.m_btKeFu = btn;
+
+	--背包
+	btn = Btn_upper:getChildByName("Btn_Bag")
+	btn:setTag(ClientScene.BT_BAG)
+	btn:addTouchEventListener(btcallback)
+	self.m_btBag = btn;
     
 	--商城
 	local shop = ExternalFun.loadCSB("Lobby/shop_2.csb", self)
@@ -1540,7 +1546,8 @@ function ClientScene:getTagLayer(tag, param)
 	elseif tag == yl.SCENE_AGENT then
 		dst = Agent:create(self)
 	elseif tag == yl.SCENE_SHOP then
-		dst = Shop:create(self, param, self._gameFrame)
+		--dst = Shop:create(self, param, self._gameFrame)
+		dst = Shop:create(self, param,self._gameFrame,curtag)
 	elseif tag == yl.SCENE_BAG then
 		dst = Bag:create(self, self._gameFrame)
 	elseif tag == yl.SCENE_BAGDETAIL then

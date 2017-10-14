@@ -9,6 +9,7 @@ local MultiPlatform = appdf.req(appdf.EXTERNAL_SRC .. "MultiPlatform")
 local targetPlatform = cc.Application:getInstance():getTargetPlatform()
 local ClientConfig = appdf.req(appdf.BASE_SRC .."app.models.ClientConfig")
 local BankFrame = appdf.req(appdf.CLIENT_SRC.."plaza.models.BankFrame")
+local ShopFrame = appdf.req(appdf.CLIENT_SRC.."plaza.models.ShopFrame")
 
 --商城页面
 local ShopLayer = class("ShopLayer", function(scene)
@@ -16,11 +17,26 @@ local ShopLayer = class("ShopLayer", function(scene)
     return shopLayer
 end)
 
+local PurchaseMember =  appdf.req(appdf.CLIENT_SRC.."plaza.views.layer.plaza.PurchaseMember")
+local BankFrame = appdf.req(appdf.CLIENT_SRC.."plaza.models.BankFrame")
+ShopLayer.SHOPITEMDIAMONDS = {"BlueDiamond.png", "YellowDiamond.png", "WhiteDiamond.png", "VIPDiamond.png","icon_laba.png"}
+ShopLayer.CBT_SCORE			= 1
+ShopLayer.CBT_BEAN			= 2
+ShopLayer.CBT_VIP			= 3
+ShopLayer.CBT_PROPERTY		= 4
+ShopLayer.CBT_ENTITY		= 5
+--特权商城
+ShopLayer.CBT_PRIVILEGE		= 6
+
 ShopLayer.BT_SCORE			= 30
 ShopLayer.BT_VIP			= 50
 ShopLayer.BT_PROPERTY		= 60
 ShopLayer.BT_GOODS			= 120
 ShopLayer.BT_BEAN			= 520
+ShopLayer.BT_PRIVILEGE		= 600
+
+ShopLayer.BT_ORDERRECORD    = 1001
+ShopLayer.BT_BAG            = 1002
 
 local SHOP_BUY = {}
 SHOP_BUY[ShopLayer.BT_SCORE] = "shop_score_buy"
@@ -28,6 +44,7 @@ SHOP_BUY[ShopLayer.BT_BEAN] = "shop_bean_buy"
 SHOP_BUY[ShopLayer.BT_VIP] = "shop_vip_buy"
 SHOP_BUY[ShopLayer.BT_PROPERTY] = "shop_prop_buy"
 SHOP_BUY[ShopLayer.BT_GOODS] = "shop_goods_buy"
+SHOP_BUY[ShopLayer.BT_PRIVILEGE] = "shop_privilege"
 
 -- 支付模式
 local APPSTOREPAY = 10 -- iap支付
@@ -56,11 +73,26 @@ end
 
 --scene
 --stmod 进入商店后的选择类型
-function ShopLayer:ctor(scene, stmod,gameFrame)
-
+function ShopLayer:ctor(scene, stmod,gameFrame,curtag)
+	stmod = stmod or ShopLayer.CBT_SCORE
     self.m_nPayMethod = GlobalUserItem.tabShopCache["nPayMethod"] or APPSTOREPAY
 	local this = self
 	self._scene = scene
+    self._curtag=curtag --当前页面
+
+    --  ======================================= 特权商城
+
+    --网络回调
+    local TQSCCallBack = function(result,message)
+		this:onShopCallBack(result,message)
+	end
+	--网络处理
+	self._ShopFrame = ShopFrame:create(self,TQSCCallBack)
+    self._ShopFrame._gameFrame = gameFrame
+    if nil ~= gameFrame then
+        gameFrame._shotFrame = self._ShopFrame
+    end
+    --  ======================================= 特权商城
 
     --====查询银行存款 start ======
     
@@ -82,6 +114,14 @@ function ShopLayer:ctor(scene, stmod,gameFrame)
 			self:onEnterTransitionFinish()
 		elseif eventType == "exitTransitionStart" then	-- 退出场景而且开始过渡动画时候触发。
 			self:onExitTransitionStart()
+        elseif eventType == "exit" then
+            if self._ShopFrame:isSocketServer() then
+                self._ShopFrame:onCloseSocket()
+            end  
+            if nil ~= self._ShopFrame._gameFrame then
+                self._ShopFrame._gameFrame._shotFrame = nil
+                self._ShopFrame._gameFrame = nil
+            end 
 		end
 	end)
 
@@ -91,6 +131,13 @@ function ShopLayer:ctor(scene, stmod,gameFrame)
          	this:onButtonClickedEvent(ref:getTag(),ref)
         end
     end
+
+    local cbtlistener = function (sender,eventType)
+    print("==")
+    	this:onSelectedEvent(sender:getTag(),sender,eventType)
+    end
+
+    self._select = stmod
 
 	self._showList = {}
 
@@ -119,6 +166,7 @@ function ShopLayer:ctor(scene, stmod,gameFrame)
 				end
 			end)
 
+    --[[
     --装饰BUTTON
     local zsBg = display.newSprite("Shop/btFrame.png")
         :move(150, 500)
@@ -127,12 +175,55 @@ function ShopLayer:ctor(scene, stmod,gameFrame)
     ccui.Button:create("Shop/zs.png","Shop/zs.png")
 		:move(zsBgSize.width/2, zsBgSize.height/2)
 		:addTo(zsBg)
+    --]]
     --[[
 	display.newSprite("Shop/title_shop.png")
 		:move(yl.WIDTH-250,yl.HEIGHT-80)
 		:addTo(self)
     --]]
 
+    local cbPositionX = 150
+    local cbPositionYStart = 615 
+    local cbIntervalY = 150
+
+    --==============================================================特权商城    不同体系
+    ccui.CheckBox:create("Shop/btn.png","","Shop/btn_on.png","","")
+		:move(cbPositionX,cbPositionYStart-cbIntervalY*2)
+		:addTo(self)
+		:setSelected(false)
+        :setVisible(true)
+        :setEnabled(true)
+        :setName("check" .. 10)
+		:setTag(ShopLayer.CBT_PRIVILEGE)
+		:addEventListener(cbtlistener)
+
+    local cTeQuan = self:getChildByTag(ShopLayer.CBT_PRIVILEGE)
+    local cbSize = cTeQuan:getContentSize()
+    display.newSprite("Shop/tqsc.png")
+		:move(cbSize.width/2, cbSize.height/2)
+		:addTo(cTeQuan)
+    --==============================================================特权商城 end
+
+	--游戏豆
+    ccui.CheckBox:create("Shop/btn.png","","Shop/btn_on.png","","")
+		:move(cbPositionX,cbPositionYStart-cbIntervalY)
+		:addTo(self)
+		:setSelected(true)
+        :setVisible(true)
+        :setEnabled(true)
+        :setName("check" .. 6)
+		:setTag(ShopLayer.CBT_BEAN)
+		:addEventListener(cbtlistener)
+
+        local ckYouxidou = self:getChildByTag(ShopLayer.CBT_BEAN)
+        display.newSprite("Shop/youxibiwenzi.png")
+		:move(cbSize.width/2, cbSize.height/2)
+		:addTo(ckYouxidou)
+
+    self.m_PurchaseMemberDlg = PurchaseMember:create(self)
+    self.m_PurchaseMemberDlg:addTo(self, yl.MAX_INT)
+    self.m_PurchaseMemberDlg:setVisible(false)
+    
     --修改为银行金币
     local spriteItemBg_bean = cc.Scale9Sprite:create("Shop/moneyBox.png")
     spriteItemBg_bean:setCapInsets(CCRectMake(35,10,165,34))
@@ -152,14 +243,14 @@ function ShopLayer:ctor(scene, stmod,gameFrame)
     self._txtBean = spriteItemBg_bean:getChildByName("_txtBean")
 
 	self._scrollView = ccui.ScrollView:create()
-        :setContentSize(cc.size(yl.WIDTH,700))
+        :setContentSize(cc.size(1084,700))
         :setAnchorPoint(cc.p(0.5, 0.5))
 --		:setPosition(cc.p(805, 314))
-        :setPosition(cc.p(yl.WIDTH/2, yl.HEIGHT/2-50))
+        :setPosition(cc.p(yl.HEIGHT/2+450, yl.HEIGHT/2-50))
         --:setDirection(cc.SCROLLVIEW_DIRECTION_HORIZONTAL)
         :setDirection(cc.SCROLLVIEW_DIRECTION_VERTICAL)
         :setBounceEnabled(false)
-        :setScrollBarEnabled(true)
+        :setScrollBarEnabled(false)
         :addTo(self)
 end
 
@@ -226,7 +317,96 @@ self.m_nPayMethod = APPSTOREPAY
                  MultiPlatform:getInstance():thirdPartyPay(yl.ThirdParty.IAP, payparam, payCallBack)
              end
          end	
+	elseif name == SHOP_BUY[ShopLayer.BT_PRIVILEGE] then
+        --特权商城
+        local temp_i=tag-ShopLayer.BT_PRIVILEGE
+        local temp_arg3=1
+        if temp_i>=4 then
+           temp_i=temp_i+1
+        end
+        if temp_i>=6 then
+        --修改喇叭标题
+           temp_arg3=2
+        end
+dump(self._itemCountList[temp_i],"item",6)
+        --弹框确认
+        if temp_i~=6 then --喇叭暂时不能购买
+            self.m_PurchaseMemberDlg:resetUI()
+            self.m_PurchaseMemberDlg:setInfo({temp_i, self._itemCountList[temp_i]["lMemberPrice"],temp_arg3})
+            self.m_PurchaseMemberDlg:setVisible(true)
+        else
+            showToast(self,"暂不支购买",2);
+        end
 	end
+end
+
+--发送购买特权
+function ShopLayer:PurchaseMemberConfirm(itemid,num)
+    self._ShopFrame:onSendPurchaseMember(itemid,num)
+end
+
+function ShopLayer:onSelectedEvent(tag,sender,eventType)
+print(tag)
+    --游戏房间暂不支持打开
+	if (tag == ShopLayer.CBT_PRIVILEGE) then
+        if self._curtag==yl.SCENE_ROOM or self._curtag==yl.SCENE_GAME then
+            showToast(self, "请退出游戏房间再打开特权商城", 2)
+            self:getChildByTag(tag):setSelected(false)
+            return
+        end
+    end
+
+	if self._select == tag then
+		self:getChildByTag(tag):setSelected(true)
+		return
+	end
+
+	self._select = tag
+
+	for i=2,6,4 do --目前只有2,6
+    print(i)
+		if i ~= tag then
+			self:getChildByTag(i):setSelected(false)
+		end
+	end
+    --特权商城    
+	if (tag == ShopLayer.CBT_PRIVILEGE) then
+    --请求特权商城信息
+        self._ShopFrame:onSendQueryExchange()
+	end
+
+	--游戏豆
+	if (tag == ShopLayer.CBT_BEAN) then
+		self:onClearShowList()
+		if 0 == #self._beanList then
+			self:loadPropertyAndVip(tag)
+		else
+			self:onUpdateBeanList()
+		end
+	end
+end
+
+--特权商城 
+--操作结果
+function ShopLayer:onShopCallBack(result, message)
+print("===================操作结果",result,message)
+dump(message,"message",6)
+	self._scene:dismissPopWait()
+    if result==yl.SUB_GP_EXCHANGE_PARAMETER then
+        --  特权商城
+		if #message == 0 then
+			showToast(self, "商品为空", 2)
+			return
+		end
+
+    	self._itemCountList = {}
+
+		for i=1,#message do
+			local item = message[i]
+	        table.insert(self._itemCountList,item)
+		end
+        self:onUpdateExchangeList()
+    end
 end
 
 --请求游戏币开始1
@@ -357,7 +537,7 @@ function ShopLayer:reloadBeanList()
     self:onClearShowList()
     GlobalUserItem.tabShopCache["shopBeanList"] = {}
     self._beanList = {}
-    self:loadPropertyAndVip()
+    self:loadPropertyAndVip(ShopLayer.CBT_BEAN)
 end
 
 function ShopLayer:updateScoreInfo()
@@ -385,24 +565,41 @@ function ShopLayer:onClearShowList()
 	self._showList = {}
 end
 
+--更新特权商城
+function ShopLayer:onUpdateExchangeList()
+	self:onClearShowList()
+    --添加喇叭数据
+    local item={}
+    item.cbMemberOrder = 6 
+    item.lMemberPrice = 5000000
+    table.insert(self._itemCountList, item)
+	self:onUpdateShowList(self._itemCountList,ShopLayer.BT_PRIVILEGE)
+end
+
 --更新当前显示
 function ShopLayer:onUpdateShowList(theList,tag)
-	local bBean = true
+	local bGold = (self._select==ShopLayer.CBT_SCORE)
+	local bOther= (self._select~=ShopLayer.CBT_SCORE)
+	local bBean = (self._select==ShopLayer.CBT_BEAN)
+    --特权商城
+	local bPrivilege = (self._select==ShopLayer.CBT_PRIVILEGE)
 
+dump(theList,"theList",6)
+print("tag== self._select===",tag,self._select)
 	--计算scroll滑动高度
 	local scrollHeight = 0
 	local scrollWidth = 0
     local cellHeight = 340
-    local cellWidth = 1200
+    local cellWidth = 1084 
     local cellWidthC2 = cellWidth/2
 	if #theList<8 then
         scrollHeight=700
-		self._scrollView:setInnerContainerSize(cc.size(1134, 700))
+		self._scrollView:setInnerContainerSize(cc.size(1084, 700))
 	else
 		scrollHeight = cellHeight * math.ceil(#theList / 4) --math.floor((#theList+math.floor(#theList%3))/3) 下部分为320 第一第二排高度和为290*2
 		scrollWidth = cellWidth * math.ceil(#theList / 4)
 		--self._scrollView:setInnerContainerSize(cc.size(scrollWidth, 580))
-		self._scrollView:setInnerContainerSize(cc.size(1134, scrollHeight))
+		self._scrollView:setInnerContainerSize(cc.size(900, scrollHeight))
 	end
 
     --[[ 假数据测试_scrollView 高度 by Zml
@@ -429,158 +626,197 @@ function ShopLayer:onUpdateShowList(theList,tag)
     		:move(160+math.floor((i-1)%3)*310-130,scrollHeight-(8+120+math.floor((i-1)/3)*220)-100)
     		:addTo(self._scrollView)
         --]]
-
-        local btn
-        if true then
-            --四栏位
-            self._showList[i] = cc.LayerColor:create(cc.c4b(100, 100, 100, 0), cellWidthC2, 240)
-                --:move(320+92/2-25*2+236*((i-3)%4)-130,72+scrollHeight-700-cellHeight*(math.ceil((i-2) / 4)-1))
-                :move(410+92/2-25*2+260*((i-1)%4)-130,65+scrollHeight-350-cellHeight*(math.ceil(i / 4)-1))
-                :addTo(self._scrollView)
-		    btn = ccui.Button:create("Shop/frame_shop_12.png","Shop/frame_shop_12.png")
-            --btn:setContentSize(cc.size(cellWidthC2, 240))
-		        :setAnchorPoint(cc.p(0.5,0.5))
-                :move(130,120)
-                --:setScale(1.1, 0.86)
-                :setTag(tag+i)
-                :setSwallowTouches(false)
-                :setName(SHOP_BUY[tag])
-                :addTo(self._showList[i])
-                :addTouchEventListener(self._btcallback)
-   		
-            local price = 0
-            local sign = nil
-            local pricestr = ""
-
-            --物品信息
-            local showSp = nil
-            --标题
-            local titleSp = nil
-            if bBean then
-            -- showSp = display.newSprite("Shop/icon_shop_5.png")
-                --现存icon 仅6张 by Zml
-                local tempIcon
-                if i>6 then
-                    tempIcon=6
-                else
-                    tempIcon=i
-                end
-                showSp = display.newSprite("Shop/icon_shop_bean"..tempIcon..".png")
-                local atlas = cc.LabelAtlas:_create(string.gsub(item.name .. "", "[.]", "/"), "Shop/num_shop_5.png", 20, 25, string.byte("/"))
-                atlas:setAnchorPoint(cc.p(1.0,0.5))
-                self._showList[i]:addChild(atlas) 
-                local name = display.newSprite("Shop/text_shop_0.png")
-                name:setAnchorPoint(cc.p(0,0.5))
-                self._showList[i]:addChild(name)
-                local wid = (atlas:getContentSize().width + name:getContentSize().width) / 2   			
-                atlas:setPosition(130 + (atlas:getContentSize().width - wid), 82)
-                name:setPosition(atlas:getPositionX(), 82)
-
-                price = item.price
-                pricestr = "￥"..string.formatNumberThousands(price,true,",")
-
-                --首充
-                if nil ~= item.paysend and 0 ~= item.paysend then
-                    local fsp = cc.Sprite:create("Shop/shop_firstpay_sp.png")
-                    fsp:setAnchorPoint(cc.p(0,1.0))
-                    fsp:setPosition(-8,248)
-                    self._showList[i]:addChild(fsp)
-                    local isFirstPay = item.isfirstpay == 0
-                    btn:setEnabled(isFirstPay)
-                end
+        --特权商城 排除数据4 红钻
+        if 4 == item.cbMemberOrder and bPrivilege then
+        else
+            local temp_i
+            if bPrivilege and item.cbMemberOrder and item.cbMemberOrder>=5 then
+                temp_i=i-1
             else
-                local frame = cc.SpriteFrameCache:getInstance():getSpriteFrame("icon_public_"..item.id..".png")
-                if nil ~= frame then
-                    showSp = cc.Sprite:createWithSpriteFrame(frame)
-                end
+                temp_i=i
+            end
 
-                -- todo 
-                --if cc.FileUtils:getInstance():isFileExist("Shop/title_property_"..item.id..".png") then
-                    --titleSp = display.newSprite("Shop/title_property_"..item.id..".png")
-                -- end
-
-                local titlelabel = cc.Label:createWithTTF(item.description, "fonts/round_body.ttf", 24)
-                    :setTextColor(cc.c4b(255,255,255,255))
-                    :setAnchorPoint(cc.p(0,0.5))
-        --               :setVisible(false)
-                    :move(90,220)
+            local btn
+            if true then
+                --四栏位
+                self._showList[i] = cc.LayerColor:create(cc.c4b(100, 100, 100, 0), cellWidthC2, 240)
+                    --:move(320+92/2-25*2+236*((i-3)%4)-130,72+scrollHeight-700-cellHeight*(math.ceil((i-2) / 4)-1))
+                    :move(92/2-25*2+260*((temp_i-1)%4)-0,65+scrollHeight-350-cellHeight*(math.ceil(temp_i / 4)-1))
+                    :addTo(self._scrollView)
+                btn = ccui.Button:create("Shop/frame_shop_12.png","Shop/frame_shop_12.png")
+                --btn:setContentSize(cc.size(cellWidthC2, 240))
+                    :setAnchorPoint(cc.p(0.5,0.5))
+                    :move(130,120)
+                    --:setScale(1.1, 0.86)
+                    :setTag(tag+temp_i)
+                    :setSwallowTouches(false)
+                    :setName(SHOP_BUY[tag])
                     :addTo(self._showList[i])
+                    :addTouchEventListener(self._btcallback)
+            
+                local price = 0
+                local sign = nil
+                local pricestr = ""
 
-                local width = (cellHeight-titlelabel:getContentSize().width) * 0.5
-                titlelabel:setPosition(width,190)
-                sign = 0
-                if item.bean == 0 then
-                    if item.ingot == 0 then
-                        if item.gold == 0 then
-                            if item.loveliness == 0 then
-                                price = item.minPrice
-                                sign = 4
+                --物品信息
+                local showSp = nil
+                --标题
+                local titleSp = nil
+                if bBean then
+                -- showSp = display.newSprite("Shop/icon_shop_5.png")
+                    --现存icon 仅6张 by Zml
+                    local tempIcon
+                    if i>6 then
+                        tempIcon=6
+                    else
+                        tempIcon=i
+                    end
+                    showSp = display.newSprite("Shop/icon_shop_bean"..tempIcon..".png")
+                    local atlas = cc.LabelAtlas:_create(string.gsub(item.name .. "", "[.]", "/"), "Shop/num_shop_6.png", 20, 24, string.byte("/"))
+                    atlas:setAnchorPoint(cc.p(1.0,0.5))
+                    self._showList[i]:addChild(atlas) 
+                    local name = display.newSprite("Shop/text_shop_0.png")
+                    name:setAnchorPoint(cc.p(0,0.5))
+                    self._showList[i]:addChild(name)
+                    local wid = (atlas:getContentSize().width + name:getContentSize().width) / 2   			
+                    atlas:setPosition(130 + (atlas:getContentSize().width - wid), 82)
+                    name:setPosition(atlas:getPositionX(), 82)
+
+                    price = item.price
+                    pricestr = string.formatNumberThousands(price,true,",").."元"
+
+                    --首充
+                    if nil ~= item.paysend and 0 ~= item.paysend then
+                        local fsp = cc.Sprite:create("Shop/shop_firstpay_sp.png")
+                        fsp:setAnchorPoint(cc.p(0,1.0))
+                        fsp:setPosition(-8,248)
+                        self._showList[i]:addChild(fsp)
+                        local isFirstPay = item.isfirstpay == 0
+                        btn:setEnabled(isFirstPay)
+                    end
+                elseif bPrivilege then
+                    --特权商城
+                    local temp_i
+                    if item.cbMemberOrder>=5 then
+                        temp_i=i-1
+                    else
+                        temp_i=i
+                    end
+                    showSp = display.newSprite("Shop/"..ShopLayer.SHOPITEMDIAMONDS[temp_i])
+                    local nameP="Shop/zi_W2.png"
+                    ---[[
+                    price = item.lMemberPrice/10000
+                    if item.cbMemberOrder==6 then
+                        nameP="Shop/zi_W1.png"
+                    end
+                    --]]
+                    ---[[
+                    local atlas = cc.LabelAtlas:_create(string.gsub(item.lMemberPrice/10000 .. "", "[.]", "/"), "Shop/num_shop_6.png", 20, 24, string.byte("/"))
+                    atlas:setAnchorPoint(cc.p(1.0,0.5))
+                    self._showList[i]:addChild(atlas)
+                    local name = display.newSprite(nameP)
+                    name:setAnchorPoint(cc.p(0,0.5))
+                    self._showList[i]:addChild(name)
+                    local wid = (atlas:getContentSize().width + name:getContentSize().width) / 2
+                    atlas:setPosition(130 + (atlas:getContentSize().width - wid), 82)
+                    name:setPosition(atlas:getPositionX(), 82)
+                    --]] 
+                    --
+                    pricestr="购买"
+                else
+                    local frame = cc.SpriteFrameCache:getInstance():getSpriteFrame("icon_public_"..item.id..".png")
+                    if nil ~= frame then
+                        showSp = cc.Sprite:createWithSpriteFrame(frame)
+                    end
+
+                    -- todo 
+                    --if cc.FileUtils:getInstance():isFileExist("Shop/title_property_"..item.id..".png") then
+                        --titleSp = display.newSprite("Shop/title_property_"..item.id..".png")
+                    -- end
+
+                    local titlelabel = cc.Label:createWithTTF(item.description, "fonts/round_body.ttf", 24)
+                        :setTextColor(cc.c4b(255,255,255,255))
+                        :setAnchorPoint(cc.p(0,0.5))
+            --               :setVisible(false)
+                        :move(90,220)
+                        :addTo(self._showList[i])
+
+                    local width = (cellHeight-titlelabel:getContentSize().width) * 0.5
+                    titlelabel:setPosition(width,190)
+                    sign = 0
+                    if item.bean == 0 then
+                        if item.ingot == 0 then
+                            if item.gold == 0 then
+                                if item.loveliness == 0 then
+                                    price = item.minPrice
+                                    sign = 4
+                                else
+                                    price = item.loveliness
+                                    sign = 3
+                                end						
                             else
-                                price = item.loveliness
-                                sign = 3
-                            end						
+                                price = item.gold
+                                sign = 2
+                            end
                         else
-                            price = item.gold
-                            sign = 2
+                            price = item.ingot
+                            sign = 1
                         end
                     else
-                        price = item.ingot
-                        sign = 1
+                        price = item.bean
                     end
-                else
-                    price = item.bean
+                    pricestr = string.formatNumberThousands(price,true,",")
+
+                    --
+                    local icon_star = cc.Sprite:create("Shop/icon_star_sp.png")
+                    if nil ~= icon_star then
+                        icon_star:setPosition(130, 140)
+                        self._showList[i]:addChild(icon_star, 1)
+                    end
                 end
-                pricestr = string.formatNumberThousands(price,true,",")
 
-                --
-                local icon_star = cc.Sprite:create("Shop/icon_star_sp.png")
-                if nil ~= icon_star then
-                    icon_star:setPosition(130, 140)
-                    self._showList[i]:addChild(icon_star, 1)
+                if price == 0 then
+                    print("======= ***** 价格信息有误 ***** =======")
+                    return
                 end
-            end
 
-            if price == 0 then
-                print("======= ***** 价格信息有误 ***** =======")
-                return
-            end
-
-            if nil ~= showSp then
-                showSp:setPosition(130, 170)
-                self._showList[i]:addChild(showSp)
-            end
-            if nil ~= titleSp then
-                titleSp:setPosition(130, 220)
-                self._showList[i]:addChild(titleSp)
-            end		
-
-            local priceContentBg = cc.Scale9Sprite:create("Shop/srkdt.png")
-            priceContentBg:setCapInsets(CCRectMake(20,20,146,28))
-            --priceContentBg:setContentSize(cc.size(190, 68))
-            priceContentBg:setPosition(130,15)
-            self._showList[i]:addChild(priceContentBg)
-
-
-            local priceLabel = cc.Label:createWithTTF(pricestr, "fonts/round_body.ttf", 28)
-                :setAnchorPoint(cc.p(0.5,0.5))
-                :move(130,20)
-                :setTextColor(cc.c4b(255,255,255,255))
-                :addTo(self._showList[i])
-
-            if nil ~= sign then     
-                local width = 0  		
-                if cc.FileUtils:getInstance():isFileExist("Shop/sign_shop_"..sign..".png") then
-                    local spsign = display.newSprite("Shop/sign_shop_"..sign..".png")
-                    width = spsign:getContentSize().width + priceLabel:getContentSize().width
-                    spsign:setAnchorPoint(cc.p(0.0,0.5))
-                        :move((260-width)/2,50)
-                        :addTo(self._showList[i])
-                    width = (260-width) * 0.5 + spsign:getContentSize().width
-
-                    priceLabel:setAnchorPoint(cc.p(0,0.5))
-                    priceLabel:setPosition(width,50)
+                if nil ~= showSp then
+                    showSp:setPosition(130, 170)
+                    self._showList[i]:addChild(showSp)
                 end
-            end  
+                if nil ~= titleSp then
+                    titleSp:setPosition(130, 220)
+                    self._showList[i]:addChild(titleSp)
+                end		
+
+                local priceContentBg = cc.Scale9Sprite:create("Shop/srkdt.png")
+                priceContentBg:setCapInsets(CCRectMake(20,20,146,28))
+                --priceContentBg:setContentSize(cc.size(190, 68))
+                priceContentBg:setPosition(130,15)
+                self._showList[i]:addChild(priceContentBg)
+
+
+                local priceLabel = cc.Label:createWithTTF(pricestr, "fonts/round_body.ttf", 28)
+                    :setAnchorPoint(cc.p(0.5,0.5))
+                    :move(130,20)
+                    :setTextColor(cc.c4b(255,255,255,255))
+                    :addTo(self._showList[i])
+
+                if nil ~= sign then     
+                    local width = 0  		
+                    if cc.FileUtils:getInstance():isFileExist("Shop/sign_shop_"..sign..".png") then
+                        local spsign = display.newSprite("Shop/sign_shop_"..sign..".png")
+                        width = spsign:getContentSize().width + priceLabel:getContentSize().width
+                        spsign:setAnchorPoint(cc.p(0.0,0.5))
+                            :move((260-width)/2,50)
+                            :addTo(self._showList[i])
+                        width = (260-width) * 0.5 + spsign:getContentSize().width
+
+                        priceLabel:setAnchorPoint(cc.p(0,0.5))
+                        priceLabel:setPosition(width,50)
+                    end
+                end  
+            end --排除特权商城4 红钻
         end     	
 	end
 end

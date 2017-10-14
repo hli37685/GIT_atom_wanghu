@@ -220,6 +220,7 @@ function RoomListLayer:tableCellAtIndex(view, idx)
 		local tempID=idx*2+i-1
 --dump(self.m_tabRoomListInfo,"self.m_tabRoomListInfo",6)
 print(tempID)
+dump(iteminfo,"iteminfo",6)
 --dump(iteminfo,"iteminfo",6)
 		local wLv = (iteminfo == nil and 0 or iteminfo.wServerLevel)
 		if cell == nil then
@@ -241,6 +242,7 @@ print(tempID)
 			local szName = (iteminfo == nil and "房间名称" or iteminfo.szServerName)
 			local szCount = (iteminfo == nil and "0" or(iteminfo.dwOnLineCount..""))
 			local szServerScore = (iteminfo == nil and "0" or iteminfo.lCellScore)
+			local szServerEScore = (iteminfo == nil and "0" or iteminfo.lEnterScore)
 			local enterGame = self._scene:getEnterGameInfo()
 					
 			local cellpos = cc.p(self.m_fThree * 0.5, view:getViewSize().height * 0.5)
@@ -291,8 +293,7 @@ print(tempID)
 			end
 			display.newSprite(filestr)
 				:setPosition(cc.p(200+self.m_fThree *(tempID%2), 110))
-				:addTo(cell)
-		
+				:addTo(cell)		
 			--[[
 			--if modulestr == "yule/oxsixex/" then --通比牛牛
 				--底注
@@ -306,6 +307,56 @@ print(tempID)
 					:addTo(cell)
 			--end
 			--]]
+			if modulestr == "yule/oxsixex/" then --通比牛牛
+				--底注
+				cc.Label:createWithTTF("底注","fonts/round_body.ttf",26)
+					:setPosition(cc.p(170+self.m_fThree *(tempID%2), 70))
+					:setVerticalAlignment(cc.VERTICAL_TEXT_ALIGNMENT_CENTER)
+					:setTextColor(cc.c4b(255,255,255,255))
+					:setAnchorPoint(cc.p(1.0,0.5))
+					:addTo(cell)
+				cc.Label:createWithTTF(szServerScore,"fonts/round_body.ttf",26)
+					:setPosition(cc.p(170+self.m_fThree *(tempID%2), 70))
+					:setVerticalAlignment(cc.VERTICAL_TEXT_ALIGNMENT_CENTER)
+					:setTextColor(cc.c4b(255,255,255,255))
+					:setAnchorPoint(cc.p(0,0.5))
+					:addTo(cell)
+			elseif modulestr == "yule/oxnew/" or modulestr == "yule/oxex/" or modulestr == "yule/watermargin/"then
+				--入场
+				cc.Label:createWithTTF("入场","fonts/round_body.ttf",26)
+					:setPosition(cc.p(170+self.m_fThree *(tempID%2), 70))
+					:setVerticalAlignment(cc.VERTICAL_TEXT_ALIGNMENT_CENTER)
+					:setTextColor(cc.c4b(255,255,255,255))
+					:setAnchorPoint(cc.p(1,0.5))
+					:addTo(cell)
+				cc.Label:createWithTTF(szServerEScore,"fonts/round_body.ttf",26)
+					:setPosition(cc.p(170+self.m_fThree *(tempID%2), 70))
+					:setVerticalAlignment(cc.VERTICAL_TEXT_ALIGNMENT_CENTER)
+					:setTextColor(cc.c4b(255,255,255,255))
+					:setAnchorPoint(cc.p(0,0.5))
+					:addTo(cell)
+			elseif modulestr == "yule/fishyqs/" or modulestr == "yule/fishlk/" then
+				cc.Label:createWithTTF(szName,"fonts/round_body.ttf",26)
+					:setPosition(cc.p(200+self.m_fThree *(tempID%2), 70))
+					:setVerticalAlignment(cc.VERTICAL_TEXT_ALIGNMENT_CENTER)
+					:setTextColor(cc.c4b(255,255,255,255))
+					:setAnchorPoint(cc.p(0.5,0.5))
+					:addTo(cell)
+			else
+				--其他 入场
+				cc.Label:createWithTTF("入场","fonts/round_body.ttf",26)
+					:setPosition(cc.p(170+self.m_fThree *(tempID%2), 70))
+					:setVerticalAlignment(cc.VERTICAL_TEXT_ALIGNMENT_CENTER)
+					:setTextColor(cc.c4b(255,255,255,255))
+					:setAnchorPoint(cc.p(1,0.5))
+					:addTo(cell)
+				cc.Label:createWithTTF(szServerEScore,"fonts/round_body.ttf",26)
+					:setPosition(cc.p(170+self.m_fThree *(tempID%2), 70))
+					:setVerticalAlignment(cc.VERTICAL_TEXT_ALIGNMENT_CENTER)
+					:setTextColor(cc.c4b(255,255,255,255))
+					:setAnchorPoint(cc.p(0,0.5))
+					:addTo(cell)
+			end
 		end
 	end
 

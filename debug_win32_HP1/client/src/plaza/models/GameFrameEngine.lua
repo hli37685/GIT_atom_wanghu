@@ -62,7 +62,7 @@ function GameFrameEngine:onLogonRoom()
 		self._callBack(-1,"获取房间信息失败！")
 		return
 	end
-	self._roomInfo.szServerAddr = yl.LOGONSERVER   --ethj 这里要改，等上线后，注释掉它。
+	--self._roomInfo.szServerAddr = yl.LOGONSERVER   --ethj 这里要改，等上线后，注释掉它。
 	print("登录房间："..self._roomInfo.szServerAddr.."#"..self._roomInfo.wServerPort)
 	if not self:onCreateSocket(self._roomInfo.szServerAddr,self._roomInfo.wServerPort) and nil ~= self._callBack then
 		self._callBack(-1,"建立连接失败！")
