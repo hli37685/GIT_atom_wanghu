@@ -25,6 +25,8 @@ BagFrame.OP_QUERYRECORD = 5
 BagFrame.OP_COMPOUND = 6
 -- 道具兑换
 BagFrame.OP_CHANGE = 7
+--使用喇叭
+BagFrame.OP_USE_LABA = 8
 
 --连接结果
 function BagFrame:onConnectCompeleted()
@@ -46,6 +48,8 @@ function BagFrame:onConnectCompeleted()
 		self:SendCompound(self._goodid,self._Comnum)
     elseif self._oprateCode == BagFrame.OP_CHANGE then		
 		self:SendChange(self._Egoodid,self._EComnum)
+    elseif self._oprateCode == BagFrame.OP_USE_LABA then		
+		self:SendUseLaba(self._labaContent)
 	else
 		self:onCloseSocket()
 		if nil ~= self._callBack then
@@ -74,7 +78,7 @@ function BagFrame:onSocketEvent(main,sub,pData)
             bNeedCloseSocket = false
 	        self._use = 0
 	        self:onCloseSocket()
-            self:onSubOpResult(pData)
+			self:onSubOpResult(pData)
 		else
 			local message = string.format("未知命令码：%d-%d",main,sub)
 			if nil ~= self._callBack then
@@ -189,6 +193,15 @@ print(bSuccess,dwCommand,score,strNotify,view)
 		else
 			print("兑换错误")
 			--showToast(self:getViewFrame(), message, 2)
+		end
+	end
+	--喇叭使用
+	if dwCommand == yl.SUB_GP_USELABA then
+		if bSuccess then
+			print("发送成功")
+			self:getViewFrame()._BaglFrame:onSendQueryBag()
+		else
+			print("发送错误")
 		end
 	end
 end
@@ -537,5 +550,41 @@ function BagFrame:SendChange(goodid,num)
 	end
 end
 
+--使用喇叭
+function BagFrame:SendUseLaba(strContent)
+	local buffer = ExternalFun.create_netdata(logincmd.CMD_GP_uselaba)
+	buffer:setcmdinfo(yl.MDM_GP_USER_SERVICE, logincmd.SUB_GP_USELABA)
+	buffer:pushdword(GlobalUserItem.dwUserID)
+    buffer:pushstring("",yl.LEN_PASSWORD)
+    buffer:pushstring(MultiPlatform:getInstance():getMachineId(), yl.LEN_MACHINE_ID)
+    buffer:pushstring(strContent, yl.LEN_USER_CHAT)
+
+	--发送失败
+	if not self:sendSocketData(buffer) and nil ~= self._callBack then
+		self._callBack(-1,"发送使用喇叭失败！")
+	end
+end
+
+function BagFrame:onSendUseLaba(strContent)
+	self._oprateCode = BagFrame.OP_USE_LABA
+    self._labaContent = strContent
+	if nil ~= self._gameFrame and self._gameFrame:isSocketServer() then
+	    local buffer = ExternalFun.create_netdata(logincmd.CMD_GP_uselaba)
+	    buffer:setcmdinfo(yl.MDM_GP_USER_SERVICE, logincmd.SUB_GP_USELABA)
+	    buffer:pushdword(GlobalUserItem.dwUserID)
+        buffer:pushstring("",yl.LEN_PASSWORD)
+        buffer:pushstring(MultiPlatform:getInstance():getMachineId(), yl.LEN_MACHINE_ID)
+        buffer:pushstring(strContent, yl.LEN_USER_CHAT)
+
+	    --发送失败
+	    if not self:sendSocketData(buffer) then
+		    self._callBack(-1,"发送查询失败！")
+	    end
+	else
+		if not self:onCreateSocket(yl.LOGONSERVER,yl.LOGONPORT) and nil ~= self._callBack then
+			self._callBack(-1,"建立连接失败！")
+		end
+	end	
+end
 
 return BagFrame

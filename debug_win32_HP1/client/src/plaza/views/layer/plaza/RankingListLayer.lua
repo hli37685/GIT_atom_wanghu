@@ -1,36 +1,29 @@
 local RankingListLayer = class("RankingListLayer", function(scene)
-		local RankingListLayer = display.newLayer(cc.c4b(0, 0, 0, 255))
-    return RankingListLayer
+		local rankingListLayer = display.newLayer(cc.c4b(0, 0, 0, 125))
+    return rankingListLayer
 end)
 local PopupInfoHead = appdf.req(appdf.EXTERNAL_SRC .. "PopupInfoHead")
-
-local PopWait = appdf.req(appdf.BASE_SRC.."app.views.layer.other.PopWait")
 
 --继续游戏
 RankingListLayer.BT_CONTINUE = 101
 
 -- 进入场景而且过渡动画结束时候触发。
 function RankingListLayer:onEnterTransitionFinish()
----[[
-	dump(self._myRank,"_myRank  onEnterTransitionFinish",6)
 	if 0 == #self._rankList then
 		self.m_bRequestData = true
-		self:showPopWait()
+		self._scene:showPopWait()
 		--appdf.onHttpJsionTable(yl.HTTP_URL .. "/WS/PhoneRank.ashx","GET","action=getscorerank&pageindex=1&pagesize=50&userid="..GlobalUserItem.dwUserID,function(jstable,jsdata)
           appdf.onHttpJsionTable("http://www.16yi.com/WS/PhoneRank.ashx","GET","action=getscorerank&pageindex=1&pagesize=20&userid="..GlobalUserItem.dwUserID,function(jstable,jsdata)
             self.m_bRequestData = false
-			self:dismissPopWait()
-			--dump(jstable, "jstable", 5)
-	dump(self._myRank,"_myRank  回调function",6)
+			self._scene:dismissPopWait()
+			dump(jstable, "jstable", 5)
 			if type(jstable) == "table" then
 				for i = 1, #jstable do
 					if i == 1 then
-						if nil~=self._myRank then
-							self._myRank.szNickName = jstable[i]["NickName"]
-							self._myRank.lScore = jstable[i]["Score"]
-							self._myRank.rank = jstable[i]["Rank"]..""
-							self._myRank.lv = jstable[i]["Experience"]
-						end
+						self._myRank.szNickName = jstable[i]["NickName"]
+						self._myRank.lScore = jstable[i]["Score"]
+						self._myRank.rank = jstable[i]["Rank"]..""
+						self._myRank.lv = jstable[i]["Experience"]
 					else
 						local item = {}
 						item.szNickName = jstable[i]["NickName"]
@@ -49,8 +42,6 @@ function RankingListLayer:onEnterTransitionFinish()
 				end
 				GlobalUserItem.tabRankCache["rankMyInfo"] = self._myRank
 				GlobalUserItem.tabRankCache["rankList"] = self._rankList
-	--dump(self._rankList,"xxxxxx _rankList",6)
-	--dump(GlobalUserItem.tabRankCache["rankList"],"123 tabRankCache",6)
 				self:onUpdateShow()
 			else
 				showToast(self,"抱歉，获取排行榜信息失败！",2,cc.c3b(250,0,0))
@@ -58,19 +49,14 @@ function RankingListLayer:onEnterTransitionFinish()
 		end)
 	else
 		self:onUpdateShow()
-	end
-	--dump(self,"onEnterTransitionFinish self",6)
-	--dump(self._rankList,"onEnterTransitionFinish _rankList",6)
+	end	
     return self
-	--]]
 end
 
 -- 退出场景而且开始过渡动画时候触发。
----[[
 function RankingListLayer:onExitTransitionStart()
     return self
 end
---]]
 
 function RankingListLayer:ctor(scene, preTag)
 	local this = self
@@ -78,10 +64,7 @@ function RankingListLayer:ctor(scene, preTag)
 
 	self._scene = scene
 	--上一个页面
-	--self.m_preTag = preTag
-
-	self._myRank = GlobalUserItem.tabRankCache["rankMyInfo"] or {name = GlobalUserItem.szNickName,lScore = "0",rank = "0"}
-	self._rankList = GlobalUserItem.tabRankCache["rankList"] or {}
+	self.m_preTag = preTag
 	
 	self:registerScriptHandler(function(eventType)
 		if eventType == "enterTransitionFinish" then	-- 进入场景而且过渡动画结束时候触发。
@@ -90,41 +73,154 @@ function RankingListLayer:ctor(scene, preTag)
 			self:onExitTransitionStart()
 		end
 	end)
+	self._myRank = GlobalUserItem.tabRankCache["rankMyInfo"] or {name = GlobalUserItem.szNickName,lScore = "0",rank = "0"}
+	self._rankList = GlobalUserItem.tabRankCache["rankList"] or {}
 
-	--dump(GlobalUserItem.tabRankCache["rankList"],"ctor tabRankCache",6)
+    -- 背景
+    local spriteMainBg = cc.Scale9Sprite:create("public/dialogframe.png")
+    spriteMainBg:setCapInsets(CCRectMake(311,184,20,26))
+    spriteMainBg:setContentSize(cc.size(1000, 600))
+    spriteMainBg:setPosition(yl.WIDTH/2,yl.HEIGHT/2)
+    self:addChild(spriteMainBg)
+
+    -- 本人信息背景
+    local imgMyinfoBg = cc.Scale9Sprite:create("public/dialogcontentbg.png")
+    imgMyinfoBg:setCapInsets(CCRectMake(40,40,42,42))
+    imgMyinfoBg:setContentSize(cc.size(1200, 100))
+    imgMyinfoBg:setPosition(667,565)
+    self:addChild(imgMyinfoBg)
+
+	--标题
+	display.newSprite("Rank/biaoti1.png")
+		:move(yl.WIDTH/2,yl.HEIGHT-110)
+		:addTo(self)
+	--返回
+	ccui.Button:create("public/closebtn.png","public/closebtn.png")
+    	:move(1160,yl.HEIGHT-105)
+    	:addTo(self)
+    	:addTouchEventListener(function(ref, type)
+       		 	if type == ccui.TouchEventType.ended then
+					this._scene:onKeyBack()
+				end
+			end)
+
+    local y = 570
+	--头像
+	--[[local texture = display.loadImage("face.png")
+	local facex = (GlobalUserItem.cbGender == yl.GENDER_MANKIND and 1 or 0)
+	self._myFace = display.newSprite(texture)
+		:setTextureRect(cc.rect(facex*200,0,200,200))
+		:setScale(46.00/200.00)
+		:move(420,y)
+		:addTo(self)
+	display.newSprite("Rank/dikuang7.png")
+		:move(420,y)
+		:addTo(self)]]
+
+--	local head = PopupInfoHead:createClipHead(GlobalUserItem, 56)
+    local head = PopupInfoHead:createNormal(GlobalUserItem, 56)
+	head:setPosition(300, y)
+	self:addChild(head)
+	head:setIsGamePop(false)
+	--根据会员等级确定头像框
+	head:enableHeadFrame(false)
+	--head:enableHeadFrame(false)
+	head:enableInfoPop(true, cc.p(340, 120), cc.p(0, 1))
+	self._myFace = head
+
+    local testen = cc.Label:createWithSystemFont("A","Arial", 24)
+    self._enSize = testen:getContentSize().width
+    local testcn = cc.Label:createWithSystemFont("游","Arial", 24)
+    self._cnSize = testcn:getContentSize().width
+
+	self._myName = cc.Label:createWithTTF(string.stringEllipsis(GlobalUserItem.szNickName,self._enSize,self._cnSize,165),"fonts/round_body.ttf",24)
+		:move(350,y)
+		:setVerticalAlignment(cc.VERTICAL_TEXT_ALIGNMENT_CENTER)
+		:setAnchorPoint(cc.p(0,0.5))
+		:addTo(self)
+
+	local function btnEvent( sender, eventType )
+		if eventType == ccui.TouchEventType.ended then
+			self:onButtonClickedEvent(sender:getTag(), sender);
+		end
+	end
+	ccui.Button:create("Rank/anniu3.png","Rank/anniu4.png")
+		:move(1100,y)	
+		:setTag(RankingListLayer.BT_CONTINUE)	
+        :setVisible(false)
+		:addTo(self)
+		:addTouchEventListener(btnEvent)
+
+	--游戏币
+	display.newSprite("Rank/biaoti3.png")
+		:move(700,y)
+		:addTo(self)
+
+	self._myRankFlag = display.newSprite("Rank/tubiao8.png")
+		:move(240,y)
+        :setVisible(false)
+		:addTo(self)
+
+	--游戏币
+	self._myScore = cc.LabelAtlas:_create("0", "Rank/shuzi3.png", 19, 24, string.byte("/")) 
+			:move(760,y-13)
+			:setAnchorPoint(cc.p(0,0))
+			:addTo(self)
+
+    -- 列表背景
+    cc.Scale9Sprite:create("Rank/frame.png")
+    	:setCapInsets(CCRectMake(20,20,411,158))
+    	:setContentSize(cc.size(980, 430))
+    	:setPosition(yl.WIDTH/2,yl.HEIGHT/2-70)
+		:addTo(self)	
+
 	--游戏列表
-    local tableVuew = self._scene._frame_rank:getChildByTag(1)
-    if tableVuew then
-        tableVuew:removeFromParent() 
-    end
-	
-	self._listView = cc.TableView:create(cc.size(self._scene._fme_rk_size.width-8, self._scene._fme_rk_size.height-68))
+	self._listView = cc.TableView:create(cc.size(950, 420))
 	self._listView:setDirection(cc.SCROLLVIEW_DIRECTION_VERTICAL)    
-	self._listView:setPosition(cc.p(4,4))
-	self._listView:setTag(1)
+	self._listView:setPosition(cc.p(190,95))
 	self._listView:setDelegate()
-	--self._listView:addTo(self._scene)
-	self._listView:addTo(self._scene._frame_rank)
+	self._listView:addTo(self)
 	self._listView:setVerticalFillOrder(cc.TABLEVIEW_FILL_TOPDOWN)
-	
+
 	self._listView:registerScriptHandler(self.cellSizeForTable, cc.TABLECELL_SIZE_FOR_INDEX)
 	self._listView:registerScriptHandler(self.tableCellAtIndex, cc.TABLECELL_SIZE_AT_INDEX)
 	self._listView:registerScriptHandler(self.tableCellTouched, cc.TABLECELL_TOUCHED)
 	self._listView:registerScriptHandler(self.numberOfCellsInTableView, cc.NUMBER_OF_CELLS_IN_TABLEVIEW)
+
 end
 
 function RankingListLayer:onUpdateShow()
 
 	local rank = tonumber(self._myRank.rank)
 	if rank > 0 and rank < 21 then
---print("onUpdateShow  1",rank)
-		--self._myRankFlag:setTexture("Rank/tubiao9.png")
+		self._myRankFlag:setTexture("Rank/tubiao9.png")
 	else
---print("onUpdateShow  2",rank)
-	 	--self._myRankFlag:setTexture("Rank/tubiao8.png")
+	 	self._myRankFlag:setTexture("Rank/tubiao8.png")
 	end 
-	--self._myScore:setString(string.formatNumberThousands(self._myRank.lScore,true,"/"))
+
+	self._myScore:setString(string.formatNumberThousands(self._myRank.lScore,true,"/"))
 	self._listView:reloadData()
+end
+
+function RankingListLayer:onButtonClickedEvent( tag, sender )
+	if RankingListLayer.BT_CONTINUE == tag then
+		local enterInfo = self._scene:getEnterGameInfo()
+		if nil ~= enterInfo then		
+			--回到游戏界面
+			GlobalUserItem.nCurGameKind = tonumber(enterInfo._KindID)
+			GlobalUserItem.szCurGameName = enterInfo._KindName
+
+			--判断上一个页面是否是房间列表
+			if nil ~= self.m_preTag and yl.SCENE_GAMELIST ~= self.m_preTag then
+				self._scene:onKeyBack()
+			else				
+				self._scene:onChangeShowMode(yl.SCENE_ROOMLIST)
+			end
+		else
+			--返回
+			self._scene:onKeyBack()
+		end
+	end
 end
 
 function RankingListLayer:onKeyBack()
@@ -135,117 +231,75 @@ end
 
 --子视图大小
 function RankingListLayer.cellSizeForTable(view, idx)
-  	return 369-8 , 70
+  	return 950 , 70
 end
 
 --子视图数目
 function RankingListLayer.numberOfCellsInTableView(view)
-	if not GlobalUserItem.tabRankCache["rankList"] then
-		return 0
-	else
-		return #GlobalUserItem.tabRankCache["rankList"]
-  	end
+	return #view:getParent()._rankList
 end
 	
 --获取子视图
 function RankingListLayer.tableCellAtIndex(view, idx)	
-
---print("idx",idx)
-
+	
 	local cell = view:dequeueCell()
 	
-	--local item = view:getParent()._rankList[idx+1]
-	local item = GlobalUserItem.tabRankCache["rankList"][idx+1]
---dump(item,"item",6)
-	local width = 369
-	local height= 79
-
-    local testen = cc.Label:createWithSystemFont("A","Arial", 28)
-    local _enSize = testen:getContentSize().width
-    local testcn = cc.Label:createWithSystemFont("游","Arial", 28)
-    local _cnSize = testcn:getContentSize().width
+	local item = view:getParent()._rankList[idx+1]
+	local width = 1161
+	local height= 76
 
 	if not cell then
-		local cy = 35
+		local cy = 35+4
 		cell = cc.TableViewCell:new()
-        local spriteContentBg = cc.Scale9Sprite:create("RankInit/itembg.png")
-        spriteContentBg:setCapInsets(CCRectMake(40,10,351,62))
-        spriteContentBg:setContentSize(cc.size(width-10, height-10))
-        spriteContentBg:setPosition(361/2, cy)
-        spriteContentBg:setTag(1)
-        cell:addChild(spriteContentBg, -100)
 
-
-		display.newSprite("RankInit/tubiao1.png")
-			:move(40,cy)
+		display.newSprite("Rank/tubiao1.png")
+			:move(80,cy)
 			:setTag(2)
 			:addTo(cell)
 
 		--名次数字
-		cc.LabelAtlas:_create("10", "RankInit/shuzi2.png", 25, 34 , string.byte("0")) 
-			:move(40,cy)
+		cc.LabelAtlas:_create("10", "Rank/shuzi5.png", 18, 21 , string.byte("0")) 
+			:move(80,cy)
 			:setTag(3)
 			:setAnchorPoint(cc.p(0.5,0.5))
 			:addTo(cell)
 
 		--昵称
-		--[[
 		cc.Label:createWithTTF("游戏玩家","fonts/round_body.ttf",24)
-			:move(305,cy)
+			:move(220,cy)
 			:setTag(5)
 			:setVerticalAlignment(cc.VERTICAL_TEXT_ALIGNMENT_CENTER)
 			:setAnchorPoint(cc.p(0,0.5))
-            :setColor(cc.c3b(255, 104, 0))
+            :setColor(cc.c3b(255, 255, 255))
 			:addTo(cell)
-			--]]
-
-		--圆角矩形
-        local RoundRect = cc.Scale9Sprite:create("RankInit/roundedRectangle.png")
-        	:setCapInsets(CCRectMake(40,10,180,42))
-        	:setContentSize(cc.size(200, 42))
-			:move(260,cy)
-			:setTag(4)
+		--金币标识
+		display.newSprite("Rank/biaoti4.png")
+			:move(600,cy)
 			:addTo(cell)
-
-		local RRect_size=RoundRect:getContentSize()
-
-		display.newSprite("Lobby/qian.png")
-			:move(22,22)
-			:addTo(RoundRect)
 
 		--金币
-		--cc.LabelAtlas:_create("0", "RankInit/shuzi3.png", 19, 24, string.byte("/")) 
-     	cc.Label:createWithSystemFont("0","Arial", 28)
-			:move(52,21)
-			:setTag(2)
+		cc.LabelAtlas:_create("0", "Rank/shuzi3.png", 19, 24, string.byte("/")) 
+			:move(650,cy)
+			:setTag(6)
 			:setAnchorPoint(cc.p(0,0.5))
-            :setColor(cc.c3b(250, 254, 149))
-			:addTo(RoundRect)
-
-     	cc.Label:createWithSystemFont("万","Arial", 28)
-		--cc.Label:createWithTTF("万","fonts/round_body.ttf",24)
-			:move(RRect_size.width-52,21)
-			:setAnchorPoint(cc.p(0.5,0.5))
-            :setColor(cc.c3b(250, 254, 149))
-			:setTag(3)
-			:addTo(RoundRect)
-
+			:addTo(cell)
 	end
-
+	---[[
 	if cell:getChildByName("cell_face") then
 		cell:getChildByName("cell_face"):updateHead(item)
 	else
 		--头像
---		local head = PopupInfoHead:createClipHead(item, 50)
-        local head = PopupInfoHead:createNormal(item, 60)
-		head:setPosition(110,35)
+		--local head = PopupInfoHead:createClipHead(item, 50)
+        local head = PopupInfoHead:createNormal(item, 50)
+		head:setPosition(160,35)
 		head:setIsGamePop(false)
---		head:enableHeadFrame(true)
-        head:enableHeadFrame(false)
-		head:enableInfoPop(true, cc.p(397+18, 152), cc.p(0, 0.5))
+		--head:enableHeadFrame(true)
+		--head:enableHeadFrame(false)
+		head:enableInfoPop(true, cc.p(420, 152), cc.p(0, 0.5))
 		cell:addChild(head)
 		head:setName("cell_face")
 	end
+	--]]
 
 	local rankidx = (idx+1)..""
 --	if  rankidx ~= view:getParent()._myRank.rank then
@@ -253,52 +307,40 @@ function RankingListLayer.tableCellAtIndex(view, idx)
 --	else
 --		cell:getChildByTag(1):setTexture("Rank/dikuang4.png")
 --	end
+	--[[
     local nodeTag1 = cell:getChildByTag(1)
     if nodeTag1 then
         nodeTag1:removeFromParent()    
-    end
-    local picTag1 = "RankInit/itembg.png"
+	end
+	--]]
+    local picTag1 = "Rank/Line.png"
     local imgTag1Bg = cc.Scale9Sprite:create(picTag1)
-    imgTag1Bg:setCapInsets(CCRectMake(40,10,351,62))
-    imgTag1Bg:setContentSize(cc.size(width-10, height-10))
-    imgTag1Bg:setPosition(361/2, 35)
+    imgTag1Bg:setCapInsets(CCRectMake(1,1,754,0))
+    imgTag1Bg:setContentSize(cc.size(width-10,1))
+    imgTag1Bg:setPosition(950/2, 4)
     imgTag1Bg:setTag(1)
     cell:addChild(imgTag1Bg, -100)
 
 	if idx == 0 then
-		cell:getChildByTag(2):setTexture("RankInit/tubiao1.png")
+		cell:getChildByTag(2):setTexture("Rank/tubiao1.png")
 		cell:getChildByTag(2):setVisible(true)
 		cell:getChildByTag(3):setVisible(false)
-		cell:getChildByTag(2):setScale(0.8)
 	elseif idx == 1 then
-		cell:getChildByTag(2):setTexture("RankInit/tubiao2.png")
+		cell:getChildByTag(2):setTexture("Rank/tubiao2.png")
 		cell:getChildByTag(2):setVisible(true)
 		cell:getChildByTag(3):setVisible(false)
-		cell:getChildByTag(2):setScale(0.8)
 	elseif idx == 2 then 
-		cell:getChildByTag(2):setTexture("RankInit/tubiao3.png")
+		cell:getChildByTag(2):setTexture("Rank/tubiao3.png")
 		cell:getChildByTag(2):setVisible(true)
 		cell:getChildByTag(3):setVisible(false)
-		cell:getChildByTag(2):setScale(0.8)
 	else
 		cell:getChildByTag(2):setVisible(false)
 		cell:getChildByTag(3):setString((idx+1).."")
 		cell:getChildByTag(3):setVisible(true)
 	end
 	--cell:getChildByTag(7):setString(item.lv)
-	--cell:getChildByTag(5):setString(item.szNickName)
-	--print("==== tag 6 ",string.formatNumberThousands(item.lScore,true,"/"))
-	--cell:getChildByTag(4):getChildByTag(2):setString(math.floor(item.lScore/10000))
-	if tonumber(item.lScore)>=100000000 then
-		local temp=math.floor(item.lScore/1000000)
-		local money = string.stringEllipsis(temp/100,_enSize,_cnSize,115)
-		cell:getChildByTag(4):getChildByTag(2):setString(string.format("%0.2f", money))
-		cell:getChildByTag(4):getChildByTag(3):setString("亿")
-	else
-		local money = string.stringEllipsis(math.floor(item.lScore/10000),_enSize,_cnSize,115)
-		cell:getChildByTag(4):getChildByTag(2):setString(money)
-		cell:getChildByTag(4):getChildByTag(3):setString("万")
-	end
+	cell:getChildByTag(5):setString(item.szNickName)
+	cell:getChildByTag(6):setString(string.formatNumberThousands(item.lScore,true,"/"))
 
 	return cell
 end
@@ -311,26 +353,5 @@ function RankingListLayer.tableCellTouched(view, cell)
 		end
 	end
 end
-
---显示等待
-function RankingListLayer:showPopWait(isTransparent)
-local width=self._scene._fme_rk_size.width
-local height=self._scene._fme_rk_size.height
-	if not self._popWait then
-		--self._popWait = PopWait:create(isTransparent,width-8,height-68,369/2,appdf.HEIGHT/2,68)
-		self._popWait = PopWait:create(isTransparent,nil,nil,369/2,appdf.HEIGHT/2,nil)
-			:show(self,"请稍候！")
-		self._popWait:setLocalZOrder(yl.MAX_INT)
-	end
-end
-
---关闭等待
-function RankingListLayer:dismissPopWait()
-	if self._popWait then
-		self._popWait:dismiss()
-		self._popWait = nil
-	end
-end
-
 ---------------------------------------------------------------------
 return RankingListLayer

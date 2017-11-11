@@ -31,9 +31,9 @@ function CheckinFrame:onConnectCompeleted()
 	elseif self._oprateCode == CheckinFrame.GETMEMBERGIFT then		--领取会员礼包
 		self:sendGetMemberGift()
 	elseif self._oprateCode == CheckinFrame.QUERYMEMBERGIFT then 	--查询会员礼包
-		self:sendCheckMemberGift()		
+		self:sendCheckMemberGift()
 	elseif self._oprateCode == CheckinFrame.BASEENSURETAKE then 	--领取低保
-		self:sendBaseEnsureTake()		
+		self:sendBaseEnsureTake()
 	elseif self._oprateCode == CheckinFrame.BASEENSUREQUERY then 	--低保参数查询
 		self:sendBaseEnsureLoad()
 	else
@@ -48,7 +48,7 @@ end
 --网络信息
 function CheckinFrame:onSocketEvent(main,sub,pData)
 	print("============Checkin onSocketEvent============")
-	print("*socket event:"..main.."#"..sub) 
+	print("*socket event:"..main.."#"..sub)
 	local bRes = false
 	if main == yl.MDM_GP_USER_SERVICE then --用户服务
 		if sub == yl.SUB_GP_CHECKIN_INFO then 						--查询签到
@@ -69,13 +69,13 @@ function CheckinFrame:onSocketEvent(main,sub,pData)
 			local message = string.format("未知命令码：%d-%d",main,sub)
 			if nil ~= self._callBack then
 				self._callBack(-1,message)
-			end			
+			end
 		end
 	end
 
 	if not bRes then
 		self:onCloseSocket()
-	end	
+	end
 end
 
 function CheckinFrame:onSubCheckinInfo(pData)
@@ -98,18 +98,19 @@ function CheckinFrame:onSubCheckinInfo(pData)
 
 	if nil ~= self._callBack then
 		return self._callBack(1)
-	end	
+	end
 end
 
 function CheckinFrame:onSubCheckinResult(pData)
 	-- CMD_GP_CheckInResult
 	print("============CheckinFrame:onSubCheckinResult============")
 	GlobalUserItem.bTodayChecked = pData:readbool()
-	local lscore = GlobalUserItem:readScore(pData)	
+	local lscore = GlobalUserItem:readScore(pData)
 	local szTip = pData:readstring()
 	GlobalUserItem.bQueryCheckInData = true
 	if GlobalUserItem.bTodayChecked == true then
-		GlobalUserItem.lUserScore = lscore
+		--GlobalUserItem.lUserScore = lscore
+		GlobalUserItem.lUserInsure = lscore
 		GlobalUserItem.wSeriesDate = GlobalUserItem.wSeriesDate+1
 
 		--非会员标记当日已签到
@@ -118,14 +119,14 @@ function CheckinFrame:onSubCheckinResult(pData)
 		end
 	end
 
-	--通知更新        
+	--通知更新
 	local eventListener = cc.EventCustom:new(yl.RY_USERINFO_NOTIFY)
     eventListener.obj = yl.RY_MSG_USERWEALTH
     cc.Director:getInstance():getEventDispatcher():dispatchEvent(eventListener)
 
 	if nil ~= self._callBack then
 		return self._callBack(10,szTip)
-	end	
+	end
 end
 
 function CheckinFrame:onSubCheckMemberGift(pData)
@@ -138,14 +139,14 @@ function CheckinFrame:onSubCheckMemberGift(pData)
 
 	local gifts = {}
 	for i=1,giftCount do
-		local item = {}		 
+		local item = {}
 		item.count = pData:readword()
 		item.id = pData:readword()
 
 		--手机端筛选
 		--if item.id > 100 then
 			table.insert(gifts,item)
-		--end		
+		--end
 	end
 	-- 加入会员奖励
 	local item = {}
@@ -154,7 +155,7 @@ function CheckinFrame:onSubCheckMemberGift(pData)
 	if 0 ~= item.count then
 		item.id = "money"
 		table.insert(gifts,item)
-	end	
+	end
 
 	if nil ~= self._callBack then
 		if bGift then
@@ -177,7 +178,7 @@ function CheckinFrame:onSubGetMemberGift(pData)
 	print("Gift tips " .. szTip)
 	if nil ~= self._callBack then
 		return self._callBack(CheckinFrame.GETMEMBERGIFT,"")
-	end 
+	end
 	return false
 end
 
@@ -190,7 +191,7 @@ function CheckinFrame:onSubGetVipPresent(pData)
 	local szTip = pData:readstring()
 	if bSuccessed then
 		GlobalUserItem.lUserScore = score
-		--通知更新        
+		--通知更新
 		local eventListener = cc.EventCustom:new(yl.RY_USERINFO_NOTIFY)
 	    eventListener.obj = yl.RY_MSG_USERWEALTH
 	    cc.Director:getInstance():getEventDispatcher():dispatchEvent(eventListener)
@@ -206,8 +207,9 @@ function CheckinFrame:onSubBaseEnsureResult(pData)
 	local szTip = pData:readstring()
 
 	if true == bSuccess then
-		GlobalUserItem.lUserScore = lscore
-		--通知更新        
+		--GlobalUserItem.lUserScore = lscore
+		GlobalUserItem.lUserInsure = lscore
+		--通知更新
 		local eventListener = cc.EventCustom:new(yl.RY_USERINFO_NOTIFY)
 	    eventListener.obj = yl.RY_MSG_USERWEALTH
 	    cc.Director:getInstance():getEventDispatcher():dispatchEvent(eventListener)

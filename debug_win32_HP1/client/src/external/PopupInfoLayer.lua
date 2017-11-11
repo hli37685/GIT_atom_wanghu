@@ -64,7 +64,7 @@ function PopupInfoLayer:ctor(viewParent, isGame)
 	self.m_clipNick:setPosition(tmp:getPosition())
 	bg_kuang:addChild(self.m_clipNick)
 	self.m_clipNick:setAnchorPoint(cc.p(0.0,0.5))
-	self.m_clipNick:setTextColor(cc.c4b(255,232,170,255))
+	self.m_clipNick:setTextColor(cc.c4b(255,255,255,255))
 	tmp:removeFromParent()
 
 	--id

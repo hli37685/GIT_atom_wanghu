@@ -25,6 +25,7 @@ CheckinLayer.TEXT_GOLD			= CheckinLayer.ICON_GOLD+7
 CheckinLayer.TEXT_DAY			= CheckinLayer.TEXT_GOLD+7
 CheckinLayer.NUM_DAY			= CheckinLayer.TEXT_DAY+7
 CheckinLayer.ICON_CHECKIN_DBG   = CheckinLayer.NUM_DAY+7
+CheckinLayer.BT_DIBAO           =10000
 
 -- 进入场景而且过渡动画结束时候触发。
 function CheckinLayer:onEnterTransitionFinish()
@@ -160,6 +161,20 @@ function CheckinLayer:ctor(scene)
     		:setTag(CheckinLayer.TEXT_GOLD+i)
     		:addTo(self)
 	end
+	
+	--低保按钮	
+	local dbbg=cc.Scale9Sprite:create("Checkin/lvbtn.png")
+		:setCapInsets(CCRectMake(27,27,130,1))
+   		:setContentSize(cc.size(140, 40))
+		:setPosition(yl.WIDTH-380,170)
+		:addTo(self)
+
+	local newDBBtnSize = dbbg:getContentSize()
+	ccui.Button:create("Checkin/dibao.png","Checkin/dibao.png")
+		:move(newDBBtnSize.width/2, newDBBtnSize.height/2)
+		:setTag(CheckinLayer.BT_DIBAO)
+		:addTo(dbbg)
+		:addTouchEventListener(self._btcallback)
 
 	--礼物列表
 	self.m_giftList = nil
@@ -210,11 +225,15 @@ function CheckinLayer:onButtonClickedEvent(tag,sender)
 		end
 		self._scene:showPopWait()
 		self._checkinFrame:onCheckMemberGift()
+	elseif tag == CheckinLayer.BT_DIBAO then
+		--领取低保
+		self._checkinFrame:onBaseEnsureTake()
 	end
 end
 
 --操作结果
 function CheckinLayer:onCheckinCallBack(result, message, subMessage)
+print("onCheckinCallBack ===",result,message,subMessage)
 	local bRes = false
 	self._scene:dismissPopWait()
 	if  message ~= nil and message ~= "" then
@@ -244,6 +263,7 @@ function CheckinLayer:onCheckinCallBack(result, message, subMessage)
 
 	--vip礼包领取结果
 	if self._checkinFrame.GETMEMBERGIFT == result then
+	--[[
 		--会员标记当日已签到
 		if GlobalUserItem.cbMemberOrder ~= 0 then
 			GlobalUserItem.setTodayCheckIn()
@@ -265,7 +285,8 @@ function CheckinLayer:onCheckinCallBack(result, message, subMessage)
 			-- 领取送金
 			self._checkinFrame:sendGetVipPresend()
 			bRes = true
-		end		
+		end
+	--]]
 	end
 	return bRes
 end

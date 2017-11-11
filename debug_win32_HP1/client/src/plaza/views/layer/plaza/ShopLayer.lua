@@ -57,12 +57,12 @@ function ShopLayer:onEnterTransitionFinish()
     self._bankFrame:onGetBankInfo()
     --====查询银行存款 end ======
 
-	if 0 == table.nums(self._shopTypeIdList) then        
+	if 0 == table.nums(self._shopTypeIdList) then
 		self:updateCheckBoxList()
     else
         --刷新界面显示
         self:updateCheckBoxList()
-	end	
+	end
     return self
 end
 
@@ -95,7 +95,7 @@ function ShopLayer:ctor(scene, stmod,gameFrame,curtag)
     --  ======================================= 特权商城
 
     --====查询银行存款 start ======
-    
+
     --网络回调
     local  bankCallBack = function(result,message)
 		this:onBankCallBack(result,message)
@@ -108,7 +108,7 @@ function ShopLayer:ctor(scene, stmod,gameFrame,curtag)
         gameFrame._shotFrame = self._bankFrame
     end
     --====查询银行存款 end ======
-	
+
 	self:registerScriptHandler(function(eventType)
 		if eventType == "enterTransitionFinish" then	-- 进入场景而且过渡动画结束时候触发。
 			self:onEnterTransitionFinish()
@@ -117,11 +117,11 @@ function ShopLayer:ctor(scene, stmod,gameFrame,curtag)
         elseif eventType == "exit" then
             if self._ShopFrame:isSocketServer() then
                 self._ShopFrame:onCloseSocket()
-            end  
+            end
             if nil ~= self._ShopFrame._gameFrame then
                 self._ShopFrame._gameFrame._shotFrame = nil
                 self._ShopFrame._gameFrame = nil
-            end 
+            end
 		end
 	end)
 
@@ -183,7 +183,7 @@ function ShopLayer:ctor(scene, stmod,gameFrame,curtag)
     --]]
 
     local cbPositionX = 150
-    local cbPositionYStart = 615 
+    local cbPositionYStart = 615
     local cbIntervalY = 150
 
     --==============================================================特权商城    不同体系
@@ -223,7 +223,7 @@ function ShopLayer:ctor(scene, stmod,gameFrame,curtag)
     self.m_PurchaseMemberDlg = PurchaseMember:create(self)
     self.m_PurchaseMemberDlg:addTo(self, yl.MAX_INT)
     self.m_PurchaseMemberDlg:setVisible(false)
-    
+
     --修改为银行金币
     local spriteItemBg_bean = cc.Scale9Sprite:create("Shop/moneyBox.png")
     spriteItemBg_bean:setCapInsets(CCRectMake(35,10,165,34))
@@ -233,8 +233,8 @@ function ShopLayer:ctor(scene, stmod,gameFrame,curtag)
     display.newSprite("Shop/icon_gold.png")
     :move(24,28)
 	:addTo(spriteItemBg_bean)
-    --cc.LabelAtlas:_create(string.formatNumberThousands(GlobalUserItem.lUserInsure,true,"/"), "Shop/num_shop_0.png", 16, 22, string.byte("."))   
-	cc.LabelTTF:create(string.formatNumberThousands(GlobalUserItem.lUserInsure,true,","), "fonts/round_body.ttf", 28) 
+    --cc.LabelAtlas:_create(string.formatNumberThousands(GlobalUserItem.lUserInsure,true,"/"), "Shop/num_shop_0.png", 16, 22, string.byte("."))
+	cc.LabelTTF:create(string.formatNumberThousands(GlobalUserItem.lUserInsure,true,","), "fonts/round_body.ttf", 28)
         :setColor(cc.c3b(250, 254, 149))
         :move(60, 27)
         :setName("_txtBean")
@@ -262,7 +262,7 @@ end
 function ShopLayer:onButtonClickedEvent(tag,sender)
     local beginPos = sender:getTouchBeganPosition()
     local endPos = sender:getTouchEndPosition()
-    if math.abs(endPos.x - beginPos.x) > 30 
+    if math.abs(endPos.x - beginPos.x) > 30
         or math.abs(endPos.y - beginPos.y) > 30 then
         print("ShopLayer:onButtonClickedEvent ==> MoveTouch Filter")
         return
@@ -277,7 +277,7 @@ function ShopLayer:onButtonClickedEvent(tag,sender)
         end
 --修改平台测试
 targetPlatform=4
-         if ClientConfig.APPSTORE_VERSION 
+         if ClientConfig.APPSTORE_VERSION
              and (targetPlatform == cc.PLATFORM_OS_IPHONE or targetPlatform == cc.PLATFORM_OS_IPAD) then
 --临时写死
 self.m_nPayMethod = APPSTOREPAY
@@ -297,11 +297,11 @@ self.m_nPayMethod = APPSTOREPAY
                  local function payCallBack(param)
                      if type(param) == "string" and "true" == param then
                          GlobalUserItem.setTodayPay()
-                        
+
                          showToast(self, "支付成功", 2)
                          --更新用户游戏豆（银行存款）
                         GlobalUserItem.lUserInsure = GlobalUserItem.lUserInsure + item.count*14000
-                         --通知更新        
+                         --通知更新
                          local eventListener = cc.EventCustom:new(yl.RY_USERINFO_NOTIFY)
                          eventListener.obj = yl.RY_MSG_USERWEALTH
                          cc.Director:getInstance():getEventDispatcher():dispatchEvent(eventListener)
@@ -316,7 +316,7 @@ self.m_nPayMethod = APPSTOREPAY
                 end
                  MultiPlatform:getInstance():thirdPartyPay(yl.ThirdParty.IAP, payparam, payCallBack)
              end
-         end	
+         end
 	elseif name == SHOP_BUY[ShopLayer.BT_PRIVILEGE] then
         --特权商城
         local temp_i=tag-ShopLayer.BT_PRIVILEGE
@@ -324,18 +324,22 @@ self.m_nPayMethod = APPSTOREPAY
         if temp_i>=4 then
            temp_i=temp_i+1
         end
-        if temp_i>=6 then
+        if temp_i>=6 then  --暂且只有6个 第五个为红钻
         --修改喇叭标题
            temp_arg3=2
         end
 dump(self._itemCountList[temp_i],"item",6)
         --弹框确认
-        if temp_i~=6 then --喇叭暂时不能购买
+        if temp_i~=6 then --喇叭除外
             self.m_PurchaseMemberDlg:resetUI()
             self.m_PurchaseMemberDlg:setInfo({temp_i, self._itemCountList[temp_i]["lMemberPrice"],temp_arg3})
             self.m_PurchaseMemberDlg:setVisible(true)
         else
-            showToast(self,"暂不支购买",2);
+            --购买喇叭
+            --showToast(self,"暂不支购买",2);
+            self.m_PurchaseMemberDlg:resetUI()
+            self.m_PurchaseMemberDlg:setInfo({temp_i, self._itemCountList[temp_i]["lMemberPrice"],temp_arg3})
+            self.m_PurchaseMemberDlg:setVisible(true)
         end
 	end
 end
@@ -343,6 +347,11 @@ end
 --发送购买特权
 function ShopLayer:PurchaseMemberConfirm(itemid,num)
     self._ShopFrame:onSendPurchaseMember(itemid,num)
+end
+
+--发送购买特权
+function ShopLayer:PurchaseLabaConfirm(num,password)
+    self._ShopFrame:onSendBuyTrumpet(num,password)
 end
 
 function ShopLayer:onSelectedEvent(tag,sender,eventType)
@@ -369,7 +378,7 @@ print(tag)
 			self:getChildByTag(i):setSelected(false)
 		end
 	end
-    --特权商城    
+    --特权商城
 	if (tag == ShopLayer.CBT_PRIVILEGE) then
     --请求特权商城信息
         self._ShopFrame:onSendQueryExchange()
@@ -386,7 +395,7 @@ print(tag)
 	end
 end
 
---特权商城 
+--特权商城
 --操作结果
 function ShopLayer:onShopCallBack(result, message)
 print("===================操作结果",result,message)
@@ -406,6 +415,12 @@ dump(message,"message",6)
 	        table.insert(self._itemCountList,item)
 		end
         self:onUpdateExchangeList()
+    elseif result==yl.SUB_GP_BUYLABA then
+        --喇叭购买结果
+        self._txtBean:setString(string.formatNumberThousands(GlobalUserItem.lUserInsure,true,","))
+        if nil~=message then
+			showToast(self, message, 2)
+        end
     end
 end
 
@@ -417,7 +432,7 @@ function ShopLayer:loadPropertyAndVip()
         return
     end
     self._scene:showPopWait()
-    if ClientConfig.APPSTORE_VERSION 
+    if ClientConfig.APPSTORE_VERSION
         and (targetPlatform == cc.PLATFORM_OS_IPHONE or targetPlatform == cc.PLATFORM_OS_IPAD) then
             -- 内购开关
             appdf.onHttpJsionTable(yl.HTTP_URL .. "/WS/iosnotappstorepayswitch1.txt","GET","action=iosnotappstorepayswitch",function(jstable,jsdata)
@@ -434,7 +449,7 @@ function ShopLayer:loadPropertyAndVip()
                                 GlobalUserItem.tabShopCache["nPayMethod"] = APPSTOREPAY
                                 self.m_nPayMethod = APPSTOREPAY
                                 self:requestPayList(8)
-                            end                            
+                            end
                         end
                     end
                 end
@@ -487,7 +502,7 @@ print("==============ShopLayer:requestPayList->isIap",isIap)
                         item.paycount = tonumber(item.paycount)
                         item.price = tonumber(item.price)
                         item.count = item.paysend + item.paycount
-                        item.description  = sitem["Description"]                                        
+                        item.description  = sitem["Description"]
                         item.name = sitem["ProductName"]
                         item.sortid = tonumber(sitem["SortID"]) or 0
                         item.nOrder = 0
@@ -504,7 +519,7 @@ print("==============ShopLayer:requestPayList->isIap",isIap)
                             end
                         else
                             table.insert(self._beanList, item)
-                        end                                             
+                        end
                     end
         --dump(self._beanList,"====self._beanList ",6)
         --排列顺序待确认
@@ -529,7 +544,7 @@ print("==============ShopLayer:requestPayList->isIap",isIap)
 
         if type(errmsg) == "string" and "" ~= errmsg then
             showToast(self,errmsg,2,cc.c3b(250,0,0))
-        end 
+        end
     end)
 end
 
@@ -558,7 +573,8 @@ end
 
 --清除当前显示
 function ShopLayer:onClearShowList()
-	for i=1,#self._showList do
+--for i=1,#self._showList do  特权商城中删除红钻后缺少4下标 遍历中断 -by Zml
+  for i,v in pairs(self._showList) do
 		self._showList[i]:removeFromParent()
 	end
 	self._showList = nil
@@ -570,8 +586,8 @@ function ShopLayer:onUpdateExchangeList()
 	self:onClearShowList()
     --添加喇叭数据
     local item={}
-    item.cbMemberOrder = 6 
-    item.lMemberPrice = 5000000
+    item.cbMemberOrder = 6
+    item.lMemberPrice = 1300000
     table.insert(self._itemCountList, item)
 	self:onUpdateShowList(self._itemCountList,ShopLayer.BT_PRIVILEGE)
 end
@@ -590,7 +606,7 @@ print("tag== self._select===",tag,self._select)
 	local scrollHeight = 0
 	local scrollWidth = 0
     local cellHeight = 340
-    local cellWidth = 1084 
+    local cellWidth = 1084
     local cellWidthC2 = cellWidth/2
 	if #theList<8 then
         scrollHeight=700
@@ -653,7 +669,7 @@ print("tag== self._select===",tag,self._select)
                     :setName(SHOP_BUY[tag])
                     :addTo(self._showList[i])
                     :addTouchEventListener(self._btcallback)
-            
+
                 local price = 0
                 local sign = nil
                 local pricestr = ""
@@ -674,11 +690,11 @@ print("tag== self._select===",tag,self._select)
                     showSp = display.newSprite("Shop/icon_shop_bean"..tempIcon..".png")
                     local atlas = cc.LabelAtlas:_create(string.gsub(item.name .. "", "[.]", "/"), "Shop/num_shop_6.png", 20, 24, string.byte("/"))
                     atlas:setAnchorPoint(cc.p(1.0,0.5))
-                    self._showList[i]:addChild(atlas) 
+                    self._showList[i]:addChild(atlas)
                     local name = display.newSprite("Shop/text_shop_0.png")
                     name:setAnchorPoint(cc.p(0,0.5))
                     self._showList[i]:addChild(name)
-                    local wid = (atlas:getContentSize().width + name:getContentSize().width) / 2   			
+                    local wid = (atlas:getContentSize().width + name:getContentSize().width) / 2
                     atlas:setPosition(130 + (atlas:getContentSize().width - wid), 82)
                     name:setPosition(atlas:getPositionX(), 82)
 
@@ -720,7 +736,7 @@ print("tag== self._select===",tag,self._select)
                     local wid = (atlas:getContentSize().width + name:getContentSize().width) / 2
                     atlas:setPosition(130 + (atlas:getContentSize().width - wid), 82)
                     name:setPosition(atlas:getPositionX(), 82)
-                    --]] 
+                    --]]
                     --
                     pricestr="购买"
                 else
@@ -729,7 +745,7 @@ print("tag== self._select===",tag,self._select)
                         showSp = cc.Sprite:createWithSpriteFrame(frame)
                     end
 
-                    -- todo 
+                    -- todo
                     --if cc.FileUtils:getInstance():isFileExist("Shop/title_property_"..item.id..".png") then
                         --titleSp = display.newSprite("Shop/title_property_"..item.id..".png")
                     -- end
@@ -753,7 +769,7 @@ print("tag== self._select===",tag,self._select)
                                 else
                                     price = item.loveliness
                                     sign = 3
-                                end						
+                                end
                             else
                                 price = item.gold
                                 sign = 2
@@ -787,7 +803,7 @@ print("tag== self._select===",tag,self._select)
                 if nil ~= titleSp then
                     titleSp:setPosition(130, 220)
                     self._showList[i]:addChild(titleSp)
-                end		
+                end
 
                 local priceContentBg = cc.Scale9Sprite:create("Shop/srkdt.png")
                 priceContentBg:setCapInsets(CCRectMake(20,20,146,28))
@@ -802,8 +818,8 @@ print("tag== self._select===",tag,self._select)
                     :setTextColor(cc.c4b(255,255,255,255))
                     :addTo(self._showList[i])
 
-                if nil ~= sign then     
-                    local width = 0  		
+                if nil ~= sign then
+                    local width = 0
                     if cc.FileUtils:getInstance():isFileExist("Shop/sign_shop_"..sign..".png") then
                         local spsign = display.newSprite("Shop/sign_shop_"..sign..".png")
                         width = spsign:getContentSize().width + priceLabel:getContentSize().width
@@ -815,9 +831,9 @@ print("tag== self._select===",tag,self._select)
                         priceLabel:setAnchorPoint(cc.p(0,0.5))
                         priceLabel:setPosition(width,50)
                     end
-                end  
+                end
             end --排除特权商城4 红钻
-        end     	
+        end
 	end
 end
 --操作结果 银行存款
@@ -837,7 +853,7 @@ function ShopLayer:onKeyBack()
         if true == self.m_payLayer:isVisible() then
             return true
         end
-        
+
         if true == self.m_bJunfuTongPay then
             return true
         end

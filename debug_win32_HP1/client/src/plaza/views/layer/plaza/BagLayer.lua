@@ -11,6 +11,7 @@ end)
 local BagFrame = appdf.req(appdf.CLIENT_SRC.."plaza.models.BagFrame")
 local ExternalFun = require(appdf.EXTERNAL_SRC .. "ExternalFun")
 local ConsignmentLayer =  appdf.req(appdf.CLIENT_SRC.."plaza.views.layer.plaza.ConsignmentLayer")
+local UseLabaLayer =  appdf.req(appdf.CLIENT_SRC.."plaza.views.layer.plaza.UseLabaLayer")
 local ConsignmentBuyLayer =  appdf.req(appdf.CLIENT_SRC.."plaza.views.layer.plaza.ConsignmentBuyLayer")
 local SynthesisPromptLayer =  appdf.req(appdf.CLIENT_SRC.."plaza.views.layer.plaza.SynthesisPromptLayer")
 local ExchangePromptLayer =  appdf.req(appdf.CLIENT_SRC.."plaza.views.layer.plaza.ExchangePromptLayer")
@@ -45,16 +46,19 @@ end
 -- 退出场景而且开始过渡动画时候触发。
 function BagLayer:onExitTransitionStart()
     self.m_ConsignmentDlg:removeFromParent()
+    self.m_UseLabaDlg:removeFromParent()
     self.m_ConsignmentBuyDlg:removeFromParent()
+    self.m_SynthesisDlg:removeFromParent()
+    self.m_ExchangeDlg:removeFromParent()
     return self
 end
 
 function BagLayer:ctor(scene, gameFrame)
-	
+
 	local this = self
 
 	self._scene = scene
-	
+
 	self:registerScriptHandler(function(eventType)
 		if eventType == "enterTransitionFinish" then	-- 进入场景而且过渡动画结束时候触发。
 			self:onEnterTransitionFinish()
@@ -63,11 +67,11 @@ function BagLayer:ctor(scene, gameFrame)
         elseif eventType == "exit" then
             if self._BaglFrame:isSocketServer() then
                 self._BaglFrame:onCloseSocket()
-            end  
+            end
             if nil ~= self._BaglFrame._gameFrame then
                 self._BaglFrame._gameFrame._shotFrame = nil
                 self._BaglFrame._gameFrame = nil
-            end          
+            end
 		end
 	end)
 
@@ -113,8 +117,9 @@ function BagLayer:ctor(scene, gameFrame)
     self._cbRecordList = {}
     self._cbOperateList = {}
 
-    self._select = BagLayer.CBT_MYPROPERTY	
+    self._select = BagLayer.CBT_MYPROPERTY
     self._tradingfloorSelect = BagLayer.CBT_BUY
+    self.RecordSelectedFlag=BagLayer.CBT_BUYRECORD
 
 	--加载csb资源
 	local rootLayer, csbNode = ExternalFun.loadRootCSB("Bag/BagLayer.csb", self)
@@ -227,6 +232,10 @@ function BagLayer:ctor(scene, gameFrame)
     self.m_ConsignmentDlg:addTo(self, yl.MAX_INT)
     self.m_ConsignmentDlg:setVisible(false)
 
+    self.m_UseLabaDlg = UseLabaLayer:create(self)
+    self.m_UseLabaDlg:addTo(self, yl.MAX_INT)
+    self.m_UseLabaDlg:setVisible(false)
+
     self.m_ConsignmentBuyDlg = ConsignmentBuyLayer:create(self)
     self.m_ConsignmentBuyDlg:addTo(self, yl.MAX_INT)
     self.m_ConsignmentBuyDlg:setVisible(false)
@@ -248,7 +257,7 @@ end
 function BagLayer:onButtonClickedEvent(tag,sender)
 --    local beginPos = sender:getTouchBeganPosition()
 --    local endPos = sender:getTouchEndPosition()
---    if math.abs(endPos.x - beginPos.x) > 30 
+--    if math.abs(endPos.x - beginPos.x) > 30
 --        or math.abs(endPos.y - beginPos.y) > 30 then
 --        print("BagLayer:onButtonClickedEvent ==> MoveTouch Filter")
 --        return
@@ -348,6 +357,7 @@ function BagLayer:onRecordSelectedEvent(tag,sender,eventType)
 		    self._cbRecordList[i]:setSelected(true)
 		end
 	end
+    self.RecordSelectedFlag=tag
     if tag == BagLayer.CBT_BUYRECORD then
         self:getBuyRecords()
     elseif tag == BagLayer.CBT_SALERECORD then
@@ -373,6 +383,10 @@ function BagLayer:consignment(itemid, price, num)
     self._BaglFrame:onSendConsignment(itemid, price, num)
 end
 
+function BagLayer:sendMessage(mes)
+    self._BaglFrame:onSendUseLaba(mes)
+end
+
 function BagLayer:buy(itemIndex, pwd)
     self._BaglFrame:onSendBuy(itemIndex, pwd)
 end
@@ -382,15 +396,15 @@ function BagLayer:underarriage(itemindex)
 end
 
 function BagLayer:SynthesisConfirm(itemid,num)
-    self._BaglFrame:onSendCompound(itemid,num*10)  
+    self._BaglFrame:onSendCompound(itemid,num*10)
 end
 
 function BagLayer:ExchangeConfirm(itemid,num)
-    self._BaglFrame:onSendChange(itemid,num)  
+    self._BaglFrame:onSendChange(itemid,num)
 end
 
 
---==========================================================交易大厅 
+--==========================================================交易大厅
 --交易大厅
 function BagLayer:getBuyList(searchid)
     self:onClearShowList()
@@ -482,7 +496,7 @@ print("========result ",result)
 		    end
 
 		    self:onUpdateTradingRecordList()
-        end     
+        end
     --[[
     elseif result==yl.SUB_GP_GOODS_COMPOUND then
         --道具合成
@@ -491,7 +505,7 @@ print("========result ",result)
         temp[1],temp[2],temp[3],temp[4]=2,1,1,5
         dump(temp,"message",6)
         print("===== ",#temp)
-        message=temp 
+        message=temp
 
 		if #message == 0 then
 			showToast(self, "道具为空", 2)
@@ -506,7 +520,7 @@ print("========result ",result)
 		end
 		self:onUpdatePropsSynthesisList()
     --]]
-    --[[ 
+    --[[
     elseif result==yl.SUB_GP_GOODSSHOPLIST_LIST then
 		if #message == 0 then
 			showToast(self, "查询结果为空", 2)
@@ -520,7 +534,7 @@ print("========result ",result)
 		end
 
 		self:onUpdateTradingRecordList()
-        --]] 
+        --]]
 	end
 
 end
@@ -550,7 +564,7 @@ function BagLayer:onUpdateMyPropertyList()
         posY = scrollHeight - intervalY;
 	else
 		self._ScrollView_Property:setInnerContainerSize({width = scrollWidth , height = intervalY*math.ceil(itemCount/3)});
-        posY = intervalY*math.ceil(itemCount/3) - intervalY; 
+        posY = intervalY*math.ceil(itemCount/3) - intervalY;
 	end
 
 	for i=1, itemCount do
@@ -558,7 +572,7 @@ function BagLayer:onUpdateMyPropertyList()
 
         item.rootNode = cc.CSLoader:createNode("Bag/PropertyItemLayer.csb")
         item.Image_Bg = item.rootNode:getChildByName("Image_Bg")
-        item.Image_Bg:setTag(i)
+        item.Image_Bg:setTag(i)     --i==6 为喇叭
         item.itemIcon = item.Image_Bg:getChildByName("Image_Item")
         item.itemName = item.Image_Bg:getChildByName("Image_ItemName"):getChildByName("txtItemName")
         item.itemIcon:loadTexture("Bag/"..BagLayer.BAGITEMICONS[i])
@@ -577,11 +591,22 @@ function BagLayer:onUpdateMyPropertyList()
 
         local this = self
         function onclickItem(sender,eventType)
-            local tmpItem = self._showList[sender:getTag()]
-            self.m_ConsignmentDlg:resetUI()
-            self.m_ConsignmentDlg:setInfo({sender:getTag(), tmpItem.itemCount})
-            self.m_ConsignmentDlg:setVisible(true)
-            self._topView = self.m_ConsignmentDlg
+            if eventType == ccui.TouchEventType.ended then
+                local tmpItem = self._showList[sender:getTag()]
+                if sender:getTag()==6 then
+                    --喇叭使用
+                    self.m_UseLabaDlg:resetUI()
+                    self.m_UseLabaDlg:setInfo({sender:getTag(), tmpItem.itemCount})
+                    self.m_UseLabaDlg:setVisible(true)
+                    self._topView = self.m_UseLabaDlg                    
+                else
+                    --寄售
+                    self.m_ConsignmentDlg:resetUI()
+                    self.m_ConsignmentDlg:setInfo({sender:getTag(), tmpItem.itemCount})
+                    self.m_ConsignmentDlg:setVisible(true)
+                    self._topView = self.m_ConsignmentDlg
+                end
+            end
         end
         item.Image_Bg:addTouchEventListener(onclickItem)
 	end
@@ -604,7 +629,7 @@ function BagLayer:onUpdateTradingFloorList()
         posY = scrollHeight - intervalY;
 	else
 		self._ScrollView_TradingFloor:setInnerContainerSize({width = scrollWidth , height = intervalY*itemCount});
-        posY = intervalY*itemCount - intervalY; 
+        posY = intervalY*itemCount - intervalY;
 	end
 
 
@@ -712,7 +737,7 @@ function BagLayer:onUpdateTradingRecordList()
         posY = scrollHeight - intervalY;
 	else
 		self._ScrollView_TradingRecord:setInnerContainerSize({width = scrollWidth , height = intervalY*itemCount});
-        posY = intervalY*itemCount - intervalY; 
+        posY = intervalY*itemCount - intervalY;
 	end
 
 	for i=1, itemCount do
@@ -735,6 +760,9 @@ function BagLayer:onUpdateTradingRecordList()
         local strTime = os.date("%Y-%m-%d %H:%M", baseTime + tonumber(self._TradingRecordList[i].GoodsshopbuyTime) + (8-24)*3600)
         item.time:setString(strTime)
         item.itemSalerID:setString(self._TradingRecordList[i].dwBYGameID)
+        if BagLayer.CBT_SALERECORD==self.RecordSelectedFlag then
+            item.itemSalerID:setString(self._TradingRecordList[i].dwToGameID)
+        end
 
         self._ScrollView_TradingRecord:addChild(item.rootNode)
         self._showList[i] = item
@@ -765,7 +793,7 @@ function BagLayer:onUpdatePropsSynthesisList()
         posY = scrollHeight - intervalY;
 	else
 		self._ScrollView_PropsSynthesis:setInnerContainerSize({width = scrollWidth , height = intervalY*math.ceil(itemCount/3)});
-        posY = intervalY*math.ceil(itemCount/3) - intervalY; 
+        posY = intervalY*math.ceil(itemCount/3) - intervalY;
 	end
 
     --注 这里使用背包中的数据
@@ -794,7 +822,7 @@ function BagLayer:onUpdatePropsSynthesisList()
 
         local this = self
         function onclickItem(sender,eventType)
-            if ccui.TouchEventType.ended==eventType then                
+            if ccui.TouchEventType.ended==eventType then
                 local tmpItem = self._showList[sender:getTag()]
                 self.m_SynthesisDlg:resetUI()
                 self.m_SynthesisDlg:setInfo({sender:getTag(), tmpItem.itemCount,Proportion})
@@ -825,7 +853,7 @@ function BagLayer:onUpdateExchangeList()
         posY = scrollHeight - intervalY;
 	--else
 	--	self._ScrollView_PropsExchange:setInnerContainerSize({width = scrollWidth , height = intervalY*math.ceil(itemCount/3)});
-    --    posY = intervalY*math.ceil(itemCount/3) - intervalY; 
+    --    posY = intervalY*math.ceil(itemCount/3) - intervalY;
 	--end
 
     --注 这里使用背包中的数据 1:鲜花数量 2:幸运币数量 3:鱼骨头数量 4:鱼骨头数量
@@ -872,6 +900,6 @@ function BagLayer:onUpdateExchangeList()
         end
         item.Image_Bg:addTouchEventListener(onclickItem)
 	end
-end 
+end
 
 return BagLayer

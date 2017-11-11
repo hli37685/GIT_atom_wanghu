@@ -41,7 +41,7 @@ BankLayer.BT_ENABLE_CONFIRM = 32
 
 function BankLayer:ctor(scene, gameFrame)
 	ExternalFun.registerNodeEvent(self)
-		
+
 	self._scene = scene
 
 	self:setContentSize(yl.WIDTH,yl.HEIGHT)
@@ -88,7 +88,7 @@ function BankLayer:ctor(scene, gameFrame)
 	end
     --网络处理
 	self._modifyFrame = ModifyFrame:create(self,modifyCallBack)
-	
+
 	--==================修改密码
 
 	local areaWidth = yl.WIDTH
@@ -192,7 +192,7 @@ function BankLayer:ctor(scene, gameFrame)
 	display.newSprite("Bank/jinbzs.png")
 		:move(cbSize.width/2, cbSize.height/2)
 		:addTo(CheBox)
---]] 
+--]]
 
 	--	携带金币
     self.txtFrame1=cc.Scale9Sprite:create("Bank/moneyBox.png")
@@ -211,7 +211,7 @@ function BankLayer:ctor(scene, gameFrame)
 		:move(630,490)
 		:addTo(self._takesaveArea)
 
-    self._txtScore = cc.Label:createWithSystemFont(string.formatNumberThousands(GlobalUserItem.lUserScore,true,","),"Arial", 26)	
+    self._txtScore = cc.Label:createWithSystemFont(string.formatNumberThousands(GlobalUserItem.lUserScore,true,","),"Arial", 26)
     		:move(660,490)
     		:setAnchorPoint(cc.p(0,0.5))
 			:setTextColor(cc.c4b(255,214,115,255))
@@ -221,7 +221,7 @@ function BankLayer:ctor(scene, gameFrame)
 		:setScale(1.3)
 		:move(320,490)
 		:addTo(self._takesaveArea)
-	self._txtScore = cc.LabelAtlas:_create(string.formatNumberThousands(GlobalUserItem.lUserScore,true,"/"), "Bank/bank_num_1.png", 19, 24, string.byte("/")) 
+	self._txtScore = cc.LabelAtlas:_create(string.formatNumberThousands(GlobalUserItem.lUserScore,true,"/"), "Bank/bank_num_1.png", 19, 24, string.byte("/"))
     		:move(420,490)
     		:setAnchorPoint(cc.p(0,0.5))
     		:addTo(self._takesaveArea)
@@ -244,7 +244,7 @@ function BankLayer:ctor(scene, gameFrame)
 		:move(630,420)
 		:addTo(self._takesaveArea)
 
-    self._txtInsure = cc.Label:createWithSystemFont(string.formatNumberThousands(GlobalUserItem.lUserInsure,true,","),"Arial", 26)	
+    self._txtInsure = cc.Label:createWithSystemFont(string.formatNumberThousands(GlobalUserItem.lUserInsure,true,","),"Arial", 26)
     		:move(660,420)
     		:setAnchorPoint(cc.p(0,0.5))
 			:setTextColor(cc.c4b(255,214,115,255))
@@ -313,8 +313,8 @@ function BankLayer:ctor(scene, gameFrame)
     self.m_textNumber:setPosition(525,318)
     self.m_textNumber:setAnchorPoint(cc.p(0,0.5))
     self.m_textNumber:setTextColor(cc.c4b(68,91,143,255))
-    self.MainUIs[#self.MainUIs+1] = self.m_textNumber  
-	--]] 
+    self.MainUIs[#self.MainUIs+1] = self.m_textNumber
+	--]]
 
     --金额大写提示 -金币赠送
     self.m_textNumberJB = ClipText:createClipText(cc.size(550,24), "", "fonts/round_body.ttf", 20)
@@ -323,7 +323,7 @@ function BankLayer:ctor(scene, gameFrame)
     self.m_textNumberJB:setAnchorPoint(cc.p(0,0.5))
 	self.m_textNumberJB:setVisible(false)
     self.m_textNumberJB:setTextColor(cc.c4b(68,91,143,255))
-    self.MainUIs[#self.MainUIs+1] = self.m_textNumberJB  
+    self.MainUIs[#self.MainUIs+1] = self.m_textNumberJB
 
 	--密码输入
     self.edit_Password_frame=cc.Scale9Sprite:create("Bank/moneyBox.png")
@@ -369,7 +369,7 @@ function BankLayer:ctor(scene, gameFrame)
 		:setInputFlag(cc.EDITBOX_INPUT_FLAG_PASSWORD)
 		:setInputMode(cc.EDITBOX_INPUT_MODE_SINGLELINE)
 		:setPlaceHolder("存款不需要密码(默认密码888888)")
-		:addTo(self._takesaveArea)	
+		:addTo(self._takesaveArea)
 
     --取款按钮
    	ccui.Button:create("Bank/bt_bank_take.png", "Bank/bt_bank_take.png")
@@ -387,7 +387,7 @@ function BankLayer:ctor(scene, gameFrame)
     	:move(305,280)
     	:addTo(self._takesaveArea)
 		--]]
-		
+
 	-- 存款 确定
     self.cunkuan = display.newSprite("Bank/lanlvbtn.png")
 		:move(700, 200)
@@ -398,7 +398,7 @@ function BankLayer:ctor(scene, gameFrame)
 		:addTo(self.cunkuan)
 		:setTag(BankLayer.BT_SAVE)
         :addTouchEventListener(btcallback)
-		
+
 	-- 取款 确定
     self.qukuan = display.newSprite("Bank/lanlvbtn.png")
 		:move(700, 200)
@@ -411,7 +411,7 @@ function BankLayer:ctor(scene, gameFrame)
 		:setTag(BankLayer.BT_TAKE)
         :addTouchEventListener(btcallback)
 
-	--修改密码 确定	 
+	--修改密码 确定
     self.xiugaimima = display.newSprite("Bank/lanlvbtn.png")
 		:move(700, 200)
 		:setVisible(false)
@@ -423,7 +423,7 @@ function BankLayer:ctor(scene, gameFrame)
 		:setTag(BankLayer.BT_MODIFY_PASSWORD)
         :addTouchEventListener(btcallback)
 
-	--金币赠送 确定	 
+	--金币赠送 确定
     self.jinbizs = display.newSprite("Bank/lanlvbtn.png")
 		:move(700, 220)
 		:setScale(1)
@@ -629,7 +629,7 @@ function BankLayer:ctor(scene, gameFrame)
 		:setPlaceholderFontColor(cc.c4b(68,91,143,255))
     	:addTo(self._transferArea)
 
-	--操作记录 
+	--操作记录
     local czjlBg=display.newSprite("Bank/lanlvbtn.png")
 		:move(880, 215)
 		:setScale(0.8)
@@ -682,7 +682,7 @@ function BankLayer:ctor(scene, gameFrame)
     	:setTag(BankLayer.BT_ENABLE)
     	:addTo(self._notifyLayer)
     	:addTouchEventListener(btcallback)
-	--开通银行 
+	--开通银行
     if 0 == GlobalUserItem.cbInsureEnabled then
         self:initEnableBankLayer()
         self:ShowMainBankUI(false)
@@ -738,7 +738,7 @@ function BankLayer:initEnableBankLayer()
         :move(400,320)
         :addTo(self._enableLayer)
 
-    --密码输入  
+    --密码输入
     self.edit_EnablePassword = ccui.EditBox:create(cc.size(492,70), "Bank/bank_frame_1.png")
         :move(770,470)
         :setFontName("fonts/round_body.ttf")
@@ -751,7 +751,7 @@ function BankLayer:initEnableBankLayer()
         :setFontColor(cc.c4b(195,199,239,255))
         :setPlaceHolder("请输入您的银行密码")
         :addTo(self._enableLayer)
-    --密码确认  
+    --密码确认
     self.edit_EnablePassConfirm = ccui.EditBox:create(cc.size(492,70), "Bank/bank_frame_1.png")
         :move(770,320)
         :setFontName("fonts/round_body.ttf")
@@ -799,7 +799,7 @@ function BankLayer:onButtonClickedEvent(tag,sender)
 		self._notifyLayer:setVisible(false)
         if nil ~= self._enableLayer then
             self._enableLayer:runAction(cc.MoveTo:create(0.3,cc.p(0,0)))
-        end		
+        end
 	elseif tag == BankLayer.BT_ENABLE_RETURN then
         self._scene:onKeyBack()
         --[[if nil ~= self._enableLayer then
@@ -815,10 +815,11 @@ end
 --输入框监听
 function BankLayer:onEditEvent(event,editbox)
 ---[[
+print(event)
 	if event == "changed" then
 		local src = editbox:getText()
 
-		local dst =  src --string.gsub(src,"([^0-9])","")		
+		local dst =  src --string.gsub(src,"([^0-9])","")
 		--editbox:setText(dst)
 
 		local ndst = tonumber(dst)
@@ -839,7 +840,7 @@ function BankLayer:onEditEvent(event,editbox)
 				self.m_textNumber:setString("")
 			end
             editbox:setText(dst)
-		end	
+		end
 	end
 --]]
 end
@@ -849,7 +850,7 @@ function BankLayer:onEditEventJB(event,editbox)
 	if event == "changed" then
 		local src = editbox:getText()
 
-		local dst =  src --string.gsub(src,"([^0-9])","")		
+		local dst =  src --string.gsub(src,"([^0-9])","")
 		--editbox:setText(dst)
 
 		local ndst = tonumber(dst)
@@ -870,7 +871,7 @@ function BankLayer:onEditEventJB(event,editbox)
 				self.m_textNumberJB:setString("")
 			end
             editbox:setText(dst)
-		end	
+		end
 	end
 --]]
 end
@@ -893,7 +894,7 @@ function BankLayer:onSelectedEvent(sender,eventType)
 			tempBtn:setEnabled(true)
 		end
 	end
-	
+
 	--判断显示的全部内容 有些未统一添加
 	self.edit_Password:setVisible(false)
 	self.edit_Password_frame:setVisible(false)
@@ -902,7 +903,7 @@ function BankLayer:onSelectedEvent(sender,eventType)
 	self.qukuan:setVisible(false)
 	self.xiugaimima:setVisible(false)
 	self.all_save:setVisible(false)
-	self.jinbizs:setVisible(false)	
+	self.jinbizs:setVisible(false)
 
 	self.txtFrame1:setVisible(true)
 	self.txtBank1:setVisible(true)
@@ -916,13 +917,19 @@ function BankLayer:onSelectedEvent(sender,eventType)
 	self.number_frame:setVisible(true)
 	self.number_label:setVisible(true)
 	self.edit_Score:setVisible(true)
-	self.m_textNumber:setVisible(true) 
-	self.m_textNumberJB:setVisible(false) 
+	
+--[[	切换后重影 暂时处理
+	self.edit_Score:setText("")
+	self.m_textNumber:setString("")
+--]]
+
+	self.m_textNumber:setVisible(true)
+	self.m_textNumberJB:setVisible(false)
 	--修改密码区域
 	self._modifypassword:setVisible(false)
 	--金币赠送界面
 	self._transferArea:setVisible(false)
-	
+
 	if tag=="NCBT_1" then
 		btn:setSelected(true)
 		print("存款")
@@ -990,7 +997,7 @@ function BankLayer:onSelectedEvent(sender,eventType)
         --手续费
         local str = string.format("提示:存入游戏币免手续费,取出将扣除%d‰的手续费。存款无需输入银行密码。", self.m_tabBankConfigInfo.wRevenueTake)
 		--调整位置
-		if transfermode then 
+		if transfermode then
 			self.m_textNumber:setPosition(930, 365)
             str = string.format("提示:普通玩家游戏币赠送需扣除%d‰的手续费。", self.m_tabBankConfigInfo.wRevenueTransfer)
             if 0 ~= GlobalUserItem.cbMemberOrder then
@@ -1001,7 +1008,7 @@ function BankLayer:onSelectedEvent(sender,eventType)
 		else
 			self.m_textNumber:setPosition(930, 330)
             self._notifyText:setString(str)
-		end        
+		end
 	elseif tag == BankLayer.CBT_BY_ID or tag == BankLayer.CBT_BY_NAME then
 		local byID = (tag == BankLayer.CBT_BY_ID)
 		self.cbt_TransferByID:setSelected(byID)
@@ -1015,12 +1022,12 @@ end
 
 --开通银行
 function BankLayer:onEnableBank()
-	
+
 	--参数判断
 	local szPass = self.edit_EnablePassword:getText()
 	local szPassConfirm = self.edit_EnablePassConfirm:getText()
 
-	if #szPass < 1 then 
+	if #szPass < 1 then
 		showToast(self,"请输入银行密码！",2)
 		return
 	end
@@ -1029,7 +1036,7 @@ function BankLayer:onEnableBank()
 		return
 	end
 
-	if #szPassConfirm < 1 then 
+	if #szPassConfirm < 1 then
 		showToast(self,"请在确认栏输入银行密码！",2)
 		return
 	end
@@ -1054,7 +1061,7 @@ function BankLayer:onEnableBank()
         showToast(self, "银行密码不能与登录密码一致!", 2)
         return
     end
-    
+
     --[[-- 首位为字母
     if 1 ~= string.find(szPass, "%a") then
         showToast(self,"密码首位必须为字母，请重新输入！",2)
@@ -1079,7 +1086,7 @@ function BankLayer:onTakeScore()
 	local szScore =  string.gsub(self.edit_Score:getText(),"([^0-9])","")
     szScore = string.gsub(szScore, "[.]", "")
 	local szPass = self.edit_Password:getText()
-    if #szScore < 1 then 
+    if #szScore < 1 then
         showToast(self,"请输入操作金额！",2)
         return
     end
@@ -1095,7 +1102,7 @@ function BankLayer:onTakeScore()
         return
     end
 
-	if #szPass < 1 then 
+	if #szPass < 1 then
 		showToast(self,"请输入银行密码！",2)
 		return
 	end
@@ -1118,15 +1125,15 @@ function BankLayer:onSaveScore()
 	--]]
 
 	--参数判断
-	local szScore =  string.gsub(self.edit_Score:getText(),"([^0-9])","")	
+	local szScore =  string.gsub(self.edit_Score:getText(),"([^0-9])","")
     szScore = string.gsub(szScore, "[.]", "")
-	if #szScore < 1 then 
+	if #szScore < 1 then
 		showToast(self,"请输入操作金额！",2)
 		return
 	end
-	
+
 	local lOperateScore = tonumber(szScore)
-	
+
 	if lOperateScore<1 then
 		showToast(self,"请输入正确金额！",2)
 		return
@@ -1154,21 +1161,21 @@ end
 function BankLayer:onModifyPassword()
 	print("修改密码")
 	--参数判断
-	local oldPassword =  string.gsub(self._modifypassword:getChildByName("edit_AreaOldPassword"):getText(),"([^0-9])","")	
+	local oldPassword =  string.gsub(self._modifypassword:getChildByName("edit_AreaOldPassword"):getText(),"([^0-9])","")
     oldPassword = string.gsub(oldPassword, "[.]", "")
-	if #oldPassword < 1 then 
+	if #oldPassword < 1 then
 		showToast(self,"请输入旧密码！",2)
 		return
 	end
-	local newPassword =  string.gsub(self._modifypassword:getChildByName("edit_AreaNewPassword"):getText(),"([^0-9])","")	
+	local newPassword =  string.gsub(self._modifypassword:getChildByName("edit_AreaNewPassword"):getText(),"([^0-9])","")
     newPassword = string.gsub(newPassword, "[.]", "")
-	if #newPassword < 1 then 
+	if #newPassword < 1 then
 		showToast(self,"请输入新密码！",2)
 		return
 	end
-	local qrPassword =  string.gsub(self._modifypassword:getChildByName("edit_AreaQRPassword"):getText(),"([^0-9])","")	
+	local qrPassword =  string.gsub(self._modifypassword:getChildByName("edit_AreaQRPassword"):getText(),"([^0-9])","")
     qrPassword = string.gsub(qrPassword, "[.]", "")
-	if #qrPassword < 1 then 
+	if #qrPassword < 1 then
 		showToast(self,"请输入再次输入新密码！",2)
 		return
 	end
@@ -1178,7 +1185,7 @@ function BankLayer:onModifyPassword()
 	end
 	if newPassword ~= qrPassword then
 		showToast(self,"两次密码输入不一致！",2)
-		return		
+		return
 	end
 print("mima ",oldPassword,newPassword,qrPassword)
 	self._modifyFrame:onModifyBankPass(oldPassword, newPassword)
@@ -1189,7 +1196,7 @@ function BankLayer:onModifyCallBack( result, tips )
 	if type(tips) == "string" and "" ~= tips then
 		showToast(self, tips, 2)
 	end
-	
+
 	if -1 ~= result then
 		self:clearEdit()
 	end
@@ -1266,7 +1273,7 @@ function BankLayer:onBankCallBack(result,message)
 			showToast(self,"银行开通成功！",2)
             if nil ~= self._enableLayer then
                 self._enableLayer:runAction(cc.MoveTo:create(0.3,cc.p(yl.WIDTH,0)))
-            end	
+            end
             self:showPopWait()
             self._bankFrame:sendGetBankInfo()
 		end
@@ -1277,7 +1284,7 @@ function BankLayer:onBankCallBack(result,message)
         showToast(self,"银行开通成功！",2)
         if nil ~= self._enableLayer then
             self._enableLayer:runAction(cc.MoveTo:create(0.3,cc.p(yl.WIDTH,0)))
-        end 
+        end
         self:showPopWait()
         self._bankFrame:onGetBankInfo()
     end
@@ -1329,7 +1336,7 @@ function BankLayer:onEnterTransitionFinish( )
     if 1 == GlobalUserItem.cbInsureEnabled then
         self:showPopWait()
         self._bankFrame:onGetBankInfo()
-    end	
+    end
 end
 
 function BankLayer:onExit()
@@ -1414,7 +1421,7 @@ function BankLayer:showCerLayer( tabData )
     csbNode.m_imageBg = image_bg
 
     -- 赠送人昵称
-    local sendnick = ClipText:createClipText(cc.size(210, 30), GlobalUserItem.szAccount, nil, 30)
+    local sendnick = ClipText:createClipText(cc.size(210, 30), GlobalUserItem.szNickName, nil, 30)
     sendnick:setTextColor(cc.c3b(79, 212, 253))
     sendnick:setAnchorPoint(cc.p(0, 0.5))
     sendnick:setPosition(cc.p(260, 507))

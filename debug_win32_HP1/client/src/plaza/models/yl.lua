@@ -255,6 +255,8 @@ yl.SUB_GP_GOODS_RESULT                  = 255           --交易结果
 --yl.SUB_GP_GOODSSHOPLIST_LIST            = 257           --交易记录
 yl.SUB_GP_GOODS_COMPOUND				=256			--道具合成
 yl.SUB_GP_GOODS_CHANGE					=257			--道具兑换
+yl.SUB_GP_BUYLABA						=258			--喇叭购买
+yl.SUB_GP_USELABA						=259			--发送喇叭
 
 --低保服务
 yl.SUB_GP_BASEENSURE_LOAD				= 260			--加载低保

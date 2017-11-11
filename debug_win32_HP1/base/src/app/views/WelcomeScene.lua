@@ -284,7 +284,7 @@ function WelcomeScene:httpNewVersion()
 						if nNewV > nCurV then
 							-- 更新配置
                             -- 暂时屏蔽更新 by lqy
-							--[[
+							---[[
 		 				    local updateConfig = {}
 					 		updateConfig.isClient = true
 					 		updateConfig.newfileurl = this:getApp()._updateUrl.."/client/res/filemd5List.json"

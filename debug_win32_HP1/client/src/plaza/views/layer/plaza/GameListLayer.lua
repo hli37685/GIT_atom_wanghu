@@ -23,7 +23,7 @@ end
 
 function GameListLayer:ctor(gamelist)
 	print("============= 游戏列表界面创建 =============")
-    dump(gamelist,"gamelist",6)
+    --dump(gamelist,"gamelist",6)
 	--print(#gamelist)
 	self.m_bQuickStart = false
 
@@ -251,10 +251,10 @@ function GameListLayer:tableCellAtIndex()
 		self._scrollView:setInnerContainerSize(cc.size(1084, scrollHeight))
 	end
 
-	dump(self._gameList,"_gameList",6)
+	--(self._gameList,"_gameList",6)
 	for i=1,#self._gameList do
 		local item = self._gameList[i]
-		dump(item,"item",6)
+		--dump(item,"item",6)
 		self._cellList[i]= cc.LayerColor:create(cc.c4b(100, 100, 100, 0), self.m_fThird, self.m_fThird)
 			:move(150+cellHeight*((i-1)%3)-0,0+scrollHeight-cellHeight*(math.ceil(i / 3)))
 			:addTo(self._scrollView)

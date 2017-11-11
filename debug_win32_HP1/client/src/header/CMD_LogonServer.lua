@@ -80,6 +80,8 @@ login.SUB_GP_GOODS_RESULT               = 255                               --�
 --login.SUB_GP_GOODSSHOPLIST_LIST         = 257                               --交易记录
 login.SUB_GP_GOODS_COMPOUND				=256								--道具合成
 login.SUB_GP_GOODS_CHANGE				=257								--道具兑换
+login.SUB_GP_BUYLABA					=258								--喇叭购买
+login.SUB_GP_USELABA					=259								--发送喇叭
 
 --低保服务
 login.SUB_GP_BASEENSURE_LOAD			= 260								--加载低保
@@ -587,6 +589,32 @@ login.CMD_GP__GoodspayResult =
     {k = "lCurrScore", t = "score"},		
     -- 提示内容
     {k = "szNotifyContent", t = "string"},				
+}
+
+--购买喇叭
+login.CMD_GP_buylaba = 
+{
+    --用户标识
+	{k = "dwUserID", t = "dword"},												
+    --用户银行密码
+	{k = "szPassword", t = "tchar", s = yl.LEN_PASSWORD},
+    --机器序列  加上这个，防止被别人购买了
+	{k = "szMachineID", t = "tchar", s = yl.LEN_MACHINE_ID},	
+    --喇叭数量 ,最少1个
+    {k = "wCountID", t = "word"},		
+}
+
+--使用喇叭
+login.CMD_GP_uselaba = 
+{
+    --用户标识
+	{k = "dwUserID", t = "dword"},												
+    --用户银行密码
+	{k = "szPassword", t = "tchar", s = yl.LEN_PASSWORD},
+    --机器序列  加上这个，防止被别人购买了
+	{k = "szMachineID", t = "tchar", s = yl.LEN_MACHINE_ID},	
+    --发送消息
+	{k = "szDescribeString", t = "tchar", s = 128},		
 }
 
 return login

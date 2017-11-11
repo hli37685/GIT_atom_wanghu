@@ -13,6 +13,8 @@ end
 ShopFrame.OP_GET_EXCHANGEINFO = 0
 -- 购买会员
 ShopFrame.OP_GET_PurchaseMember = 1
+-- 购买喇叭
+ShopFrame.OP_GET_TRUMPET = 2
 
 --连接结果
 function ShopFrame:onConnectCompeleted()
@@ -22,6 +24,8 @@ function ShopFrame:onConnectCompeleted()
 		self:SendQueryExchange()
 	elseif self._oprateCode==ShopFrame.OP_GET_PurchaseMember then
 		self:SendPurchaseMember(self._goodid,self._Comnum)
+	elseif self._oprateCode==ShopFrame.OP_GET_TRUMPET then
+		self:sendBuyTrumpet(self._buyTrumpetCnt,self._pwd)
 	else
 		self:onCloseSocket()
 		if nil ~= self._callBack then
@@ -37,12 +41,19 @@ function ShopFrame:onSocketEvent(main,sub,pData)
     local bNeedCloseSocket = true
 	if main == yl.MDM_GP_USER_SERVICE then --道具命令
 		if sub == yl.SUB_GP_EXCHANGE_PARAMETER then 	--特权商城查询
+	        self._use = 0
+	        self:onCloseSocket()
 			self:onSubGetExChangeInfo(pData)
 		elseif sub == yl.SUB_GP_PURCHASE_RESULT then
             bNeedCloseSocket = false
 	        self._use = 0
 	        self:onCloseSocket()
-            self:onSubOpResult(pData)	
+			self:onSubOpResult(pData)
+		--喇叭购买
+		elseif sub == yl.SUB_GP_GOODS_RESULT then
+	        self._use = 0
+	        self:onCloseSocket()
+			self:onSubLabaInfo(pData)
 		else
 			local message = string.format("未知命令码：%d-%d",main,sub)
 			if nil ~= self._callBack then
@@ -85,6 +96,23 @@ print(pData:readdword())
 		self._callBack(yl.SUB_GP_EXCHANGE_PARAMETER,list)
 	end
 
+end
+
+--喇叭
+function ShopFrame:onSubLabaInfo(pData)
+	local cmdtable = ExternalFun.read_netdata(logincmd.CMD_GP__GoodspayResult, pData)
+    local bSuccess = cmdtable.bSuccessed
+    local wCommandID = cmdtable.wCommandID  --258购买喇叭 259发送喇叭
+	local lCurrScore = cmdtable.lCurrScore
+	local szNotifyContent = cmdtable.szNotifyContent
+	if wCommandID==logincmd.SUB_GP_BUYLABA then
+		if bSuccess then
+			GlobalUserItem.lUserInsure =lCurrScore --银行存款
+		end
+		if nil ~= self._callBack then
+			self._callBack(yl.SUB_GP_BUYLABA,szNotifyContent)
+		end
+	end
 end
 
 function ShopFrame:onSubOpResult(pData)
@@ -187,5 +215,45 @@ print(goodid,num)
 		end
 	end
 end
+
+--购买喇叭
+function ShopFrame:sendBuyTrumpet(tCnt, pwd)
+	local buffer = ExternalFun.create_netdata(logincmd.CMD_GP_buylaba)
+	buffer:setcmdinfo(yl.MDM_GP_USER_SERVICE, logincmd.SUB_GP_BUYLABA)
+	buffer:pushdword(GlobalUserItem.dwUserID)
+    buffer:pushstring(md5(pwd),yl.LEN_PASSWORD)
+    buffer:pushstring(MultiPlatform:getInstance():getMachineId(), yl.LEN_MACHINE_ID)
+    buffer:pushword(tCnt)
+
+	--发送失败
+	if not self:sendSocketData(buffer) and nil ~= self._callBack then
+		self._callBack(-1,"发送背包查询失败！")
+	end
+end
+
+--购买喇叭
+function ShopFrame:onSendBuyTrumpet(tCnt, pwd)
+	self._oprateCode = ShopFrame.OP_GET_TRUMPET
+    self._buyTrumpetCnt = tCnt
+    self._pwd = pwd
+	if nil ~= self._gameFrame and self._gameFrame:isSocketServer() then
+	    local buffer = ExternalFun.create_netdata(logincmd.CMD_GP_buylaba)
+	    buffer:setcmdinfo(yl.MDM_GP_USER_SERVICE, logincmd.SUB_GP_BUYLABA)
+	    buffer:pushdword(GlobalUserItem.dwUserID)
+        buffer:pushstring(md5(pwd),yl.LEN_PASSWORD)
+        buffer:pushstring(MultiPlatform:getInstance():getMachineId(), yl.LEN_MACHINE_ID)
+        buffer:pushword(tCnt)
+
+	    --发送失败
+	    if not self:sendSocketData(buffer) then
+		    self._callBack(-1,"发送查询失败！")
+	    end
+	else
+		if not self:onCreateSocket(yl.LOGONSERVER,yl.LOGONPORT) and nil ~= self._callBack then
+			self._callBack(-1,"建立连接失败！")
+		end
+	end	
+end
+
 
 return ShopFrame

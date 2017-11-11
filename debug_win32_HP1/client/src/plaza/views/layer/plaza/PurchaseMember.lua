@@ -20,10 +20,24 @@ function PurchaseMember:ctor(scene)
 
 	--加载csb资源
 	local rootLayer, csbNode = ExternalFun.loadRootCSB("Bag/PurchaseMember.csb", self)
-	self.mCsbNode = csbNode
+    self.mCsbNode = csbNode
+    
+    --是否为购买喇叭
+    self.isBuylaba=0
 
     --标题
     self.title=csbNode:getChildByName("Image_2")
+    --购买价格 --银行密码
+    self.Image_Pje=csbNode:getChildByName("Image_Pje")
+
+    self.Image_11=self.Image_Pje:getChildByName("Image_11")
+    --价格
+    self.txtPjeT=self.Image_Pje:getChildByName("txtPje")
+    
+    self.txtPje = self.Image_Pje:getChildByName("txtPje")
+    --繁体
+    self.txtPjeF =csbNode:getChildByName("describe")
+
     --按钮
     local btnOk = csbNode:getChildByName("btnClose")
     btnOk:setTag(PurchaseMember.BTN_CLOSE)
@@ -57,9 +71,21 @@ function PurchaseMember:ctor(scene)
 	self._edtPrice:registerScriptEditBoxHandler(handler(self, self.onNumChange))
     --self._edtPrice:registerScriptEditBoxHandler(function(eventname, sender) self:onNumChange(eventname, sender) end) 
     --支付金额 显示
-    self.txtPje = csbNode:getChildByName("Image_Pje"):getChildByName("txtPje")
-    --繁体
-    self.txtPjeF =csbNode:getChildByName("describe")
+
+    --银行密码
+    self._bankPassword = ccui.EditBox:create(cc.size(230,40), "")
+		:move(120,22)
+		:setFontName("fonts/round_body.ttf")
+		:setPlaceholderFontName("fonts/round_body.ttf")
+		:setFontSize(20)
+		:setPlaceholderFontSize(20)
+		:setFontColor(cc.c4b(255,255,255,255))
+		:setPlaceHolder("请输入银行密码")
+		:setMaxLength(26)
+		:setInputMode(cc.EDITBOX_INPUT_MODE_SINGLELINE)
+		:setInputFlag(cc.EDITBOX_INPUT_FLAG_PASSWORD)
+        :addTo(self.Image_Pje)
+        :setVisible(false)
 
     --图标1
     self._Image_Item1 = csbNode:getChildByName("Image_Item1")
@@ -78,7 +104,8 @@ print(eventType,sender)
         local num =self._edtPrice:getText()
         if  num and tonumber(num) and tonumber(num) > 0 then
             self._txtSaleNum:setString(num)
-            self._ItemCount:setString(num*self.Proportion)
+            self.txtPje:setString(num*self.Proportion)            
+            self:FT(num*self.Proportion)
         else
             showToast(self, "请输入购买数量", 2)
             self._txtSaleNum:setString(1)
@@ -133,8 +160,22 @@ end
 function PurchaseMember:Pconfirm()
     local num = self._txtSaleNum:getString()
     if  num and tonumber(num) and tonumber(num) > 0 then
-        self.mScene:PurchaseMemberConfirm(self._itemid, tonumber(num))
-        self:setVisible(false)
+        if self.isBuylaba~=1 then
+            self.mScene:PurchaseMemberConfirm(self._itemid, tonumber(num))
+            self:setVisible(false)
+        else
+            local bankPassword=self._bankPassword:getText()
+            if bankPassword~=nil and ""~=bankPassword then
+                if #bankPassword<6 then
+                    showToast(self, "请输入6位以上银行密码", 2)
+                    return
+                end
+                self.mScene:PurchaseLabaConfirm(tonumber(num),bankPassword)
+                self:setVisible(false)
+            else
+                showToast(self, "请输入银行密码", 2)
+            end
+        end
     else
         showToast(self, "请输入购买个数", 2)
     end
@@ -158,8 +199,21 @@ function PurchaseMember:setInfo(args)
         if args[3] then
             if args[3]==1 then
                 self.title:loadTexture("Bag/"..PurchaseMember.SHOPICON[1])
+                self.Image_11:loadTexture("Bag/zfje.png")
+                self.txtPjeF:setVisible(true)
+                self.txtPjeT:setVisible(true)      
+                self._bankPassword:setVisible(false)          
+                self.isBuylaba=0
             elseif args[3]==2 then
+                --喇叭
                 self.title:loadTexture("Bag/"..PurchaseMember.SHOPICON[2])
+                --修改为银行密码
+                self.Image_11:loadTexture("Bag/fieldPwd.png")
+			    self.txtPjeF:setVisible(false)
+                self.txtPjeT:setVisible(false)
+                self._bankPassword:setText("")
+                self._bankPassword:setVisible(true) --银行密码
+                self.isBuylaba=1
             end
         end
     end

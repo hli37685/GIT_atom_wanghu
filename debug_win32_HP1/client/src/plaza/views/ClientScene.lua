@@ -364,6 +364,11 @@ function ClientScene:onCreate()
 	btn:setTag(ClientScene.BT_BAG)
 	btn:addTouchEventListener(btcallback)
 	self.m_btBag = btn;
+
+	--背包
+	btn = Btn_upper:getChildByName("Btn_Rank")
+	btn:setTag(ClientScene.BT_RANK)
+	btn:addTouchEventListener(btcallback)
     
 	--商城
 	local shop = ExternalFun.loadCSB("Lobby/shop_2.csb", self)

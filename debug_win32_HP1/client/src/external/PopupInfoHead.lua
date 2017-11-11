@@ -26,7 +26,7 @@ function PopupInfoHead:createNormal( useritem ,headSize)
 	sf.m_head = head
 	if nil ~= head then
 		sf:addChild(head)
-	end	
+	end
 	return sf, head
 end
 
