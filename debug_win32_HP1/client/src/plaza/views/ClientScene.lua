@@ -1472,6 +1472,8 @@ function ClientScene:onChangeShowMode(nTag, param)
 	--控制宝箱、喇叭显示	
 	local infoShow = (tag == yl.SCENE_GAMELIST or bRoomList or tag == yl.SCENE_ROOM)
 	self._notify:setVisible(infoShow)
+	--公告重新获取 进入/返回大厅 进入游戏房间
+	self:requestNotice()
 
     --控制幸运转盘、签到有礼、快速开始显示   待添加 排行榜
     self._btQDYL:setVisible(infoShow)
