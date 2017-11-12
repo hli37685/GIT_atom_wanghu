@@ -390,6 +390,7 @@ function ClientScene:onCreate()
 	local stencil  = display.newSprite()
 		:setAnchorPoint(cc.p(0,0.5))
 	stencil:setTextureRect(cc.rect(0,0,627,50))
+	--stencil:setTextureRect(cc.rect(0,0,1334,750))
 	self._notifyClip = cc.ClippingNode:create(stencil)
 		:setAnchorPoint(cc.p(0,0.5))
 	self._notifyClip:setInverted(false)
@@ -876,7 +877,8 @@ function ClientScene:onChangeNotify(msg)
 					self._notifyText:move(yl.WIDTH-500,0)
 					self._notifyText:setVisible(true)
 				end),
-				cc.MoveTo:create((tmpWidth / 40),cc.p(0-tmpWidth,0)),
+				--0.5s/字
+				cc.MoveTo:create((self:FStingWidth(msg.str)/2),cc.p(0-tmpWidth,0)),
 				cc.CallFunc:create(	function()
 					local tipsSize = 0
 					local tips = {}
@@ -902,6 +904,38 @@ function ClientScene:onChangeNotify(msg)
 			)
 	)
 --]]
+end
+
+function ClientScene:FStingWidth(str)
+	local fontSize = 2
+	local lenInByte = #str
+	local width = 0
+	 
+	for i=1,lenInByte do
+		local curByte = string.byte(str, i)
+		local byteCount = 1;
+		if curByte>0 and curByte<=127 then
+			byteCount = 1
+		elseif curByte>=192 and curByte<223 then
+			byteCount = 2
+		elseif curByte>=224 and curByte<239 then
+			byteCount = 3 --汉字
+		elseif curByte>=240 and curByte<=247 then
+			byteCount = 4
+		end
+		 
+		local char = string.sub(str, i, i+byteCount-1)
+		i = i + byteCount -1
+		 
+		if byteCount == 1 then
+			--width = width + 1
+		else
+			width = width + 1
+			--print(byteCount,char,i)
+		end
+	end
+	 
+	return lenInByte-width*2
 end
 
 function ClientScene:ExitClient()
@@ -1473,7 +1507,9 @@ function ClientScene:onChangeShowMode(nTag, param)
 	local infoShow = (tag == yl.SCENE_GAMELIST or bRoomList or tag == yl.SCENE_ROOM)
 	self._notify:setVisible(infoShow)
 	--公告重新获取 进入/返回大厅 进入游戏房间
-	self:requestNotice()
+	if infoShow then
+		self:requestNotice()
+	end
 
     --控制幸运转盘、签到有礼、快速开始显示   待添加 排行榜
     self._btQDYL:setVisible(infoShow)

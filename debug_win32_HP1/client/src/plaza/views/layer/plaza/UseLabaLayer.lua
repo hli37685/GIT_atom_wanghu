@@ -40,7 +40,37 @@ function UseLabaLayer:ctor(scene)
 		:setPlaceHolder("内容上限64字")
 		--:setInputMode(cc.EDITBOX_INPUT_MODE_SINGLELINE)
 		:addTo(EditboxBg)
-	--self._edtMessage:registerScriptEditBoxHandler(handler(self, self.onMessage))
+    --self._edtMessage:registerScriptEditBoxHandler(handler(self, self.onMessage))
+    
+
+    self._textField = ccui.TextField:create("hello easy!","Arial", 36)
+    self._textField:setPosition(cc.p(500, 300))
+    self._textField:setMaxLength(240)
+    self._textField:setMaxLengthEnabled( true)
+    self._textField:ignoreContentAdaptWithSize( false)-------------关键
+    self._textField:setContentSize(cc.size(600, 80))---------------关键
+    self:addChild(self ._textField)
+    self._textField:setTouchEnabled( true)
+
+    
+    local function textFieldEvent(ref,event)
+        print(ref,event)
+        self._textField:attachWithIME()
+    end
+    local function TextFiledCallBack(event)
+        local sender = event.target 
+        if event.name == "ATTACH_WITH_IME" then
+            print("----------------------ATTACH_WITH_IME------------------------")
+        elseif event.name == "DETACH_WITH_IME" then
+            print("---------------------DETACH_WITH_IME-------------------------")
+        elseif event.name == "INSERT_TEXT" then
+            print("----------------------INSERT_TEXT------------------------")
+        elseif event.name == "DELETE_BACKWARD" then
+          print("---------------------DELETE_BACKWARD-------------------------")
+        end
+    end
+    self._textField:addEventListener(TextFiledCallBack)
+    
 
     self._Image_Item = csbNode:getChildByName("Image_Item")
     self._ItemCount = self._Image_Item:getChildByName("txtCount")
@@ -79,7 +109,7 @@ function UseLabaLayer:consignment()
     local mes=self._edtMessage:getText()
 print(mas)
     if nil~=mes then
-        self.mScene:sendMessage("好冷..2")
+        --self.mScene:sendMessage("好冷..2")
         self:setVisible(false)
     else
         showToast(self, "请输入消息内容", 2)
