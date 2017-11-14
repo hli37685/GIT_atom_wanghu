@@ -358,7 +358,7 @@ function LogonFrame:sendRegister()
 	RegisterData:pushword(--[[GlobalUserItem.nCurGameKind]]yl.INVALID_WORD)
 	RegisterData:pushdword(self._plazaVersion)
 	RegisterData:pushbyte(self._deviceType)
-
+	RegisterData:pushbyte(101)				--注册区分 马甲包区分
 	RegisterData:pushstring(string.upper(md5(self._szRegPassword)),yl.LEN_MD5)
 
 	RegisterData:pushword(1)

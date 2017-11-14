@@ -477,8 +477,11 @@ GlobalUserItem.lUserScore = GlobalUserItem:readScore(pData)
 GlobalUserItem.lUserIngot = GlobalUserItem:readScore(pData)
 GlobalUserItem.lUserInsure= GlobalUserItem:readScore(pData)
 GlobalUserItem.dUserBeans = pData:readdouble()
+-- BYTE       cbMoorMachine;      --ethj锁定机器  下次停机维护更新  0 锁定  1 解锁
 GlobalUserItem.cbInsureEnabled = pData:readbyte()
+GlobalUserItem.cbLockMachine = pData:readbyte()
 GlobalUserItem.szAccount = pData:readstring(128)
+print("==== .cbInsureEnabled.cbLockMachine .szAccount",GlobalUserItem.cbInsureEnabled,GlobalUserItem.cbLockMachine,GlobalUserItem.szAccount)
 	local curlen = pData:getcurlen()
 	local datalen = pData:getlen()
 

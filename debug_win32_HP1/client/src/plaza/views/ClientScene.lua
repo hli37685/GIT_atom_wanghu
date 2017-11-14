@@ -68,6 +68,8 @@ local Room = appdf.req(appdf.CLIENT_SRC.."plaza.views.layer.room.RoomLayer")
 
 local TrumpetSendLayer = appdf.req(appdf.CLIENT_SRC.."plaza.views.layer.friend.TrumpetSendLayer")
 
+local MessageListLayer = appdf.req(appdf.CLIENT_SRC.."plaza.views.layer.plaza.MessageListLayer")
+
 local BindingRegisterLayer = appdf.req(appdf.CLIENT_SRC .. "plaza.views.layer.plaza.BindingRegisterLayer")
 
 local HeadSprite = appdf.req(appdf.EXTERNAL_SRC .. "HeadSprite")
@@ -137,8 +139,8 @@ function ClientScene:onEnterTransitionFinish()
 	self.m_actShopAni:gotoFrameAndPlay(0,true)
 	self._shop:runAction(self.m_actShopAni)
 
-	--请求公告
-	self:requestNotice()	
+	--请求公告 切换页面中已经请求
+	--self:requestNotice()
 
     return self
 end
@@ -193,8 +195,8 @@ function ClientScene:onCreate()
 	GlobalUserItem.m_tabEnterGame = nil
 	--上一个场景
 	self.m_nPreTag = nil
-	--喇叭发送界面
-	self.m_trumpetLayer = nil	
+	--喇叭发送界面 改为 消息列表界面
+	self.m_messagelistLayer = nil	
 	GlobalUserItem.bHasLogon = true
 	self._gameFrame = GameFrameEngine:create(self,function (code,result)
 		this:onRoomCallBack(code,result)
@@ -282,6 +284,9 @@ function ClientScene:onCreate()
         :move(display.left_bottom)
         :addTo(self)
 
+	--商城
+	local shop = ExternalFun.loadCSB("Lobby/shop_2.csb", self)
+	self._shop = shop
     --加载csb资源
     local rootLayer,csbNode = ExternalFun.loadRootCSB("Lobby/LobbyLayer.csb",self)
     self.m_plazaLayer = csbNode
@@ -370,9 +375,6 @@ function ClientScene:onCreate()
 	btn:setTag(ClientScene.BT_RANK)
 	btn:addTouchEventListener(btcallback)
     
-	--商城
-	local shop = ExternalFun.loadCSB("Lobby/shop_2.csb", self)
-	self._shop = shop
     --商场按钮
 	btn = shop:getChildByName("Button_1")
 	btn:setTag(ClientScene.BT_SHOP)
@@ -383,7 +385,7 @@ function ClientScene:onCreate()
 	--喇叭
 	self._notify = csbNode:getChildByName("Trumpet_Bg")
 	btn = self._notify:getChildByName("Trumpet")
---	btn:setTag(ClientScene.BT_TRUMPET)
+	btn:setTag(ClientScene.BT_TRUMPET)
 	btn:move(14, 18.5)
 	btn:addTouchEventListener(btcallback)
 
@@ -850,11 +852,13 @@ function ClientScene:onChangeNotify(msg)
 ---[[
 	self._notifyText:stopAllActions()
 	if not msg or not msg.str or #msg.str == 0 then
+		--[[
 		self._notifyText:setString("")
 		self.m_bNotifyRunning = false
 		self._tipIndex = 1
 		self._sysIndex = 1
 		return
+		--]] 
 	end
 	self.m_bNotifyRunning = true
 	local msgcolor = msg.color or cc.c4b(255,191,123,255)
@@ -869,16 +873,25 @@ function ClientScene:onChangeNotify(msg)
 			self:removeNoticeById(msg.id)
 		end
 	end
-	
+
 	local tmpWidth = self._notifyText:getContentSize().width
+	local runTimg=0
+	if self:FStingWidth(msg.str)> 24 then
+		--0.5s/字
+		runTimg=8+(self:FStingWidth(msg.str)-24)*0.3
+	else
+		runTimg=8
+	end
+	if not msg or not msg.str or #msg.str == 0 then
+		runTimg=0 
+	end
 	self._notifyText:runAction(
 			cc.Sequence:create(
 				cc.CallFunc:create(	function()
 					self._notifyText:move(yl.WIDTH-500,0)
 					self._notifyText:setVisible(true)
 				end),
-				--0.5s/字
-				cc.MoveTo:create((self:FStingWidth(msg.str)/2),cc.p(0-tmpWidth,0)),
+				cc.MoveTo:create((runTimg),cc.p(0-tmpWidth,0)),
 				cc.CallFunc:create(	function()
 					local tipsSize = 0
 					local tips = {}
@@ -1087,7 +1100,7 @@ function ClientScene:onButtonClickedEvent(tag,ref)
         elseif tag == ClientScene.BT_KEFU then
             self:onChangeShowMode(yl.SCENE_KEFU)
 		elseif tag == ClientScene.BT_TRUMPET then			
-			self:getTrumpetSendLayer()
+			self:getMessageListLayer()
 		elseif tag == ClientScene.BT_PERSON then
 			self:onChangeShowMode(yl.SCENE_USERINFO)
 		elseif tag == ClientScene.BT_SHOP then
@@ -1670,12 +1683,12 @@ function ClientScene:getGameInfo(wKindID)
 end
 
 --获取喇叭发送界面
-function ClientScene:getTrumpetSendLayer()
-	if nil == self.m_trumpetLayer then
-		self.m_trumpetLayer = TrumpetSendLayer:create(self)
-		self.m_plazaLayer:addChild(self.m_trumpetLayer)
+function ClientScene:getMessageListLayer()
+	if nil == self.m_messagelistLayer then
+		self.m_messagelistLayer = MessageListLayer:create(self,self.m_tabSystemNotice)
+		self.m_plazaLayer:addChild(self.m_messagelistLayer)
 	end
-	self.m_trumpetLayer:showLayer(true)
+	self.m_messagelistLayer:showLayer(true)
 end
 
 function ClientScene:getSceneRecord(  )
@@ -2012,6 +2025,8 @@ function ClientScene:requestNotice()
 				if nil ~= valid and true == valid then
 					local list = data["notice"]
 					if type(list)  == "table" then
+						--清理消息
+						self.m_tabSystemNotice = {}
 						local listSize = #list
 						self.m_nNoticeCount = listSize
 						for i = 1, listSize do

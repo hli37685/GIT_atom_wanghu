@@ -190,16 +190,19 @@ function OptionLayer:ctor(scene)
         
     --锁定帐号
     local lockTag = nil
+    local imgLock = nil
     if 1 == GlobalUserItem.cbLockMachine then
         lockTag = OptionLayer.BT_UNLOCK
+        imgLock ="Option/unlockbtn.png"
     else
         lockTag = OptionLayer.BT_LOCK
+        imgLock ="Option/suoding.png"
     end
     local sdzhBg = display.newSprite("Option/lanlvbtn.png")
         :move(460, BgSize.height-440)
         :addTo(self.MainUI_spriteMainBg)
     local sdzhBgSize = sdzhBg:getContentSize()
-    ccui.Button:create("Option/suoding.png","Option/suoding.png")
+    ccui.Button:create(imgLock,imgLock)
 		:move(sdzhBgSize.width/2, sdzhBgSize.height/2)
         :setTag(lockTag)
 		:addTo(sdzhBg)
@@ -229,8 +232,6 @@ function OptionLayer:ctor(scene)
 --    self.m_btnLock:move(631,166)        
 --        :addTo(self)
 --        :addTouchEventListener(btcallback)
-
-
 
 --    local mgr = self._scene:getApp():getVersionMgr()
 --    local verstr = mgr:getResVersion() or "0"
@@ -387,9 +388,9 @@ function OptionLayer:onModifyCallBack(result, tips)
         showToast(self, tips, 2)
     end 
 
-    local normal = "Option/suodingbtn.png"
-    local disable = "Option/suodingbtn.png"
-    local press = "Option/suodingbtn.png"
+    local normal = "Option/suoding.png"
+    local disable = "Option/suoding.png"
+    local press = "Option/suoding.png"
 dump(result,"result",6)
 dump(self._modifyFrame.BIND_MACHINE,"self._modifyFrame.BIND_MACHINE",6)
 print("====== GlobalUserItem.cbLockMachine",GlobalUserItem.cbLockMachine)

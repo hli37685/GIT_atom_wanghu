@@ -28,49 +28,25 @@ function UseLabaLayer:ctor(scene)
     --输入框背景
     local EditboxBg = csbNode:getChildByName("Image_Bg_0")
 
+    self.TStext = cc.Label:createWithTTF("内容上限64字", "fonts/round_body.ttf", 24)
+        :addTo(EditboxBg)
+        :setTextColor(cc.c4b(255,255,255,255))
+        :setAnchorPoint(cc.p(0.5,0.5))
+        :move(220,90)
     --消息内容
-    self._edtMessage = ccui.EditBox:create(cc.size(440,180), "")
-		:move(220,90)
+    self._edtMessage = ccui.EditBox:create(cc.size(440,40), "")
+		:move(220,110)
 		:setFontName("fonts/round_body.ttf")
 		:setPlaceholderFontName("fonts/round_body.ttf")
-		:setFontSize(20)
-		:setPlaceholderFontSize(20)
+		:setFontSize(22)
+		:setPlaceholderFontSize(22)
 		:setFontColor(cc.c4b(255,255,255,255))
-		:setMaxLength(64)
-		:setPlaceHolder("内容上限64字")
-		--:setInputMode(cc.EDITBOX_INPUT_MODE_SINGLELINE)
+        :setMaxLength(64)
+        :setContentSize(440,120) 
+		:setPlaceHolder("")
+		:setInputMode(cc.EDITBOX_INPUT_MODE_ANY)
 		:addTo(EditboxBg)
-    --self._edtMessage:registerScriptEditBoxHandler(handler(self, self.onMessage))
-    
-
-    self._textField = ccui.TextField:create("hello easy!","Arial", 36)
-    self._textField:setPosition(cc.p(500, 300))
-    self._textField:setMaxLength(240)
-    self._textField:setMaxLengthEnabled( true)
-    self._textField:ignoreContentAdaptWithSize( false)-------------关键
-    self._textField:setContentSize(cc.size(600, 80))---------------关键
-    self:addChild(self ._textField)
-    self._textField:setTouchEnabled( true)
-
-    
-    local function textFieldEvent(ref,event)
-        print(ref,event)
-        self._textField:attachWithIME()
-    end
-    local function TextFiledCallBack(event)
-        local sender = event.target 
-        if event.name == "ATTACH_WITH_IME" then
-            print("----------------------ATTACH_WITH_IME------------------------")
-        elseif event.name == "DETACH_WITH_IME" then
-            print("---------------------DETACH_WITH_IME-------------------------")
-        elseif event.name == "INSERT_TEXT" then
-            print("----------------------INSERT_TEXT------------------------")
-        elseif event.name == "DELETE_BACKWARD" then
-          print("---------------------DELETE_BACKWARD-------------------------")
-        end
-    end
-    self._textField:addEventListener(TextFiledCallBack)
-    
+    self._edtMessage:registerScriptEditBoxHandler(handler(self, self.onMessage))
 
     self._Image_Item = csbNode:getChildByName("Image_Item")
     self._ItemCount = self._Image_Item:getChildByName("txtCount")
@@ -84,14 +60,23 @@ end
 function UseLabaLayer:onMessage(eventType,sender)
 --print(ccui.TextFiledEventType.insert_text ,ccui.TextFiledEventType.delete_backward)
     if eventType=="began" then
+        self.TStext:setVisible(false)
     elseif eventType=="ended" then
     elseif eventType=="changed" then
+        if nil==self._edtMessage:getText() or ""==self._edtMessage:getText() then
+            self.TStext:setVisible(true)
+        else
+            self.TStext:setVisible(false)
+        end
     elseif eventType=="return" then
     end
 end
 
 function UseLabaLayer:resetUI()
     --重置界面
+    self._edtMessage:setText("")
+    --输入提示
+    self.TStext:setVisible(true)
 end
 
 --返回按钮事件
@@ -107,12 +92,24 @@ end
 
 function UseLabaLayer:consignment()
     local mes=self._edtMessage:getText()
-print(mas)
-    if nil~=mes then
-        --self.mScene:sendMessage("好冷..2")
+print(mes)
+
+    --判断emoji
+    if ExternalFun.isContainEmoji(mes) then
+        showToast(self, "喇叭内容包含非法字符,请重试", 2)
+        return
+    end
+    --敏感词过滤  
+    if true == ExternalFun.isContainBadWords(mes) then
+        showToast(self, "喇叭内容包含敏感词汇!", 3)
+        return
+    end
+
+    if string.len(mes) < 1  then
+        self.mScene:sendMessage(mes)
         self:setVisible(false)
     else
-        showToast(self, "请输入消息内容", 2)
+        showToast(self, "喇叭内容不能为空", 2)
     end
 end
 
