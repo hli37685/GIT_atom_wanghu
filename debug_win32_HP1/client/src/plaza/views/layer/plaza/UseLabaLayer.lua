@@ -105,7 +105,7 @@ print(mes)
         return
     end
 
-    if nil~=mes and string.len(mes) < 1 and mes~="" then
+    if nil~=mes and string.len(mes) > 1 and mes~="" then
         self.mScene:sendMessage(mes)
         self:setVisible(false)
     else
