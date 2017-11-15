@@ -43,10 +43,11 @@ function MessageListLayer:ctor(scene, NoticeMes)
 	self._showList = {}
 	--ScrollView
 	self._MESlist = csbNode:getChildByName("bg"):getChildByName("MESlist")
-	self:showLayer(true)
+	self:showLayer(true,self._NoticeMes)
 end
 
-function MessageListLayer:showLayer(bShow)
+function MessageListLayer:showLayer(bShow,NoticeMes)
+	self._NoticeMes=NoticeMes
 --
 dump(self._NoticeMes,"NoticeMes",6)
 	self:setVisible(bShow)
@@ -72,21 +73,20 @@ function MessageListLayer:Update()
 
 	for i=1, itemCount do
 	local item = self._NoticeMes[i]
---dump(item,"item",6)
-print(item.str)
+--print(item.str)
 		
 		self._showList[i] = cc.LayerColor:create(cc.c4b(100, 100, 100, 0), scrollWidth, intervalY)
-			:move(0,scrollHeight-intervalY*(i-1)-20)
+			:move(0,scrollHeight-intervalY*(i-1)-22)
 			:addTo(self._MESlist)
 
 		--cc.Label:createWithTTF("的点点滴滴多点点滴三的点点滴滴多点点滴三的点点滴滴多点点滴三的点点滴滴多点点滴三的点点滴滴多点点滴三的点点滴滴多点点滴三一二三四", "fonts/round_body.ttf", 20)
 		cc.Label:createWithTTF(item.str, "fonts/round_body.ttf", 20)
 			:setTextColor(cc.c4b(255,255,255,255))
 			:setAnchorPoint(cc.p(0,0.5))
-			:setDimensions(scrollWidth-35,intervalY)
+			:setDimensions(scrollWidth-35,intervalY-5)
 			:setVerticalAlignment(cc.VERTICAL_TEXT_ALIGNMENT_CENTER)
 			:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
-			:move(30,0)
+			:move(30,2)
 			:addTo(self._showList[i])
 
 		--喇叭
@@ -95,9 +95,9 @@ print(item.str)
 			:addTo(self._showList[i])
 
 		cc.Scale9Sprite:create("Rank/Line.png")
-			--:setCapInsets(CCRectMake(1,1,754,0))
-			:setCapInsets(cc.rect(1,1,754,0))
-			:setContentSize(cc.size(scrollWidth-10,1))
+			--:setCapInsets(CCRectMake(1,1,754,1))
+			:setCapInsets(cc.rect(1,1,754,1))
+			:setContentSize(cc.size(scrollWidth-10,2))
 			:setPosition(scrollWidth/2, -intervalY/2+1)
 			:addTo(self._showList[i])
 

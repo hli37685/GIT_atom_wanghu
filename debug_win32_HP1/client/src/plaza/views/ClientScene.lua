@@ -1688,7 +1688,7 @@ function ClientScene:getMessageListLayer()
 		self.m_messagelistLayer = MessageListLayer:create(self,self.m_tabSystemNotice)
 		self.m_plazaLayer:addChild(self.m_messagelistLayer)
 	end
-	self.m_messagelistLayer:showLayer(true)
+	self.m_messagelistLayer:showLayer(true,self.m_tabSystemNotice)
 end
 
 function ClientScene:getSceneRecord(  )
