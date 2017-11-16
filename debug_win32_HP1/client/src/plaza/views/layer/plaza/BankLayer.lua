@@ -250,18 +250,24 @@ function BankLayer:ctor(scene, gameFrame)
 			:setTextColor(cc.c4b(255,214,115,255))
     		:addTo(self._takesaveArea)
 
+	--新 存款内容
+	self._takesaveNew = display.newLayer()
+		:setContentSize(1250,520)
+		:move(0,0)
+		:addTo(self._takesaveArea)
+
 	--金额输入
     self.number_frame=cc.Scale9Sprite:create("Bank/moneyBox.png")
         --spriteSigneBg:setCapInsets(CCRectMake(43,40,479,44))
         :setContentSize(cc.size(500, 52))
 		:move(720 ,350)
-		:addTo(self._takesaveArea)
+		:addTo(self._takesaveNew)
 
     self.number_label=cc.Label:createWithSystemFont("金币数量","Arial", 26)
 			:move(500,350)
     		:setAnchorPoint(cc.p(0,0.5))
 			:setTextColor(cc.c4b(146,215,255,255))
-    		:addTo(self._takesaveArea)
+    		:addTo(self._takesaveNew)
 
 	self.edit_Score = ccui.EditBox:create(cc.size(200,30), "")
 		:move(630,350)
@@ -275,7 +281,7 @@ function BankLayer:ctor(scene, gameFrame)
 		:setPlaceHolder("在此输入数量")
 		:setFontColor(cc.c4b(255,255,255,255))
 		:setPlaceholderFontColor(cc.c4b(68,91,143,255))
-    	:addTo(self._takesaveArea)
+    	:addTo(self._takesaveNew)
 	self.edit_Score:registerScriptEditBoxHandler(editHanlder)
 
     -- 全部存入
@@ -325,20 +331,26 @@ function BankLayer:ctor(scene, gameFrame)
     self.m_textNumberJB:setTextColor(cc.c4b(68,91,143,255))
     self.MainUIs[#self.MainUIs+1] = self.m_textNumberJB
 
+
+	--新 取款内容 -密码输入框
+	self._takesaveNew2 = display.newLayer()
+		:setContentSize(1250,520)
+		:move(0,0)
+		:setVisible(false)
+		:addTo(self._takesaveArea)
+
 	--密码输入
     self.edit_Password_frame=cc.Scale9Sprite:create("Bank/moneyBox.png")
         --spriteSigneBg:setCapInsets(CCRectMake(43,40,479,44))
         :setContentSize(cc.size(500, 52))
 		:move(720 ,280)
-		:setVisible(false)
-		:addTo(self._takesaveArea)
+		:addTo(self._takesaveNew2)
 
     self.edit_Password_label=cc.Label:createWithSystemFont("取款密码","Arial", 26)
 			:move(500,280)
     		:setAnchorPoint(cc.p(0,0.5))
 			:setTextColor(cc.c4b(146,215,255,255))
-			:setVisible(false)
-    		:addTo(self._takesaveArea)
+    		:addTo(self._takesaveNew2)
 
 	self.edit_Password = ccui.EditBox:create(cc.size(300,30), "")
 		:move(630,280)
@@ -353,9 +365,7 @@ function BankLayer:ctor(scene, gameFrame)
 		:setPlaceHolder("在此输入密码")
 		:setFontColor(cc.c4b(255,255,255,255))
 		:setPlaceholderFontColor(cc.c4b(68,91,143,255))
-		:setVisible(false)
-    	:addTo(self._takesaveArea)
-	self.edit_Score:registerScriptEditBoxHandler(editHanlder)
+    	:addTo(self._takesaveNew2)
 	--密码输入
 	--[[
 	self.edit_Password = ccui.EditBox:create(cc.size(492,70), ccui.Scale9Sprite:create("Bank/bank_frame_1.png"))
@@ -896,9 +906,7 @@ function BankLayer:onSelectedEvent(sender,eventType)
 	end
 
 	--判断显示的全部内容 有些未统一添加
-	self.edit_Password:setVisible(false)
-	self.edit_Password_frame:setVisible(false)
-	self.edit_Password_label:setVisible(false)
+	self._takesaveNew2:setVisible(false)
 	self.cunkuan:setVisible(false)
 	self.qukuan:setVisible(false)
 	self.xiugaimima:setVisible(false)
@@ -914,9 +922,7 @@ function BankLayer:onSelectedEvent(sender,eventType)
 	self.txtBank:setVisible(true)
 	self.txtQian:setVisible(true)
 	self._txtInsure:setVisible(true)
-	self.number_frame:setVisible(true)
-	self.number_label:setVisible(true)
-	self.edit_Score:setVisible(true)
+	self._takesaveNew:setVisible(true)
 	
 --[[	切换后重影 暂时处理
 	self.edit_Score:setText("")
@@ -937,9 +943,7 @@ function BankLayer:onSelectedEvent(sender,eventType)
 		self.all_save:setVisible(true)
 	elseif tag=="NCBT_2" then
 		btn:setSelected(true)
-		self.edit_Password:setVisible(true)
-		self.edit_Password_frame:setVisible(true)
-		self.edit_Password_label:setVisible(true)
+		self._takesaveNew2:setVisible(true)
 		self.qukuan:setVisible(true)
 		print("取款")
 	elseif tag=="NCBT_3" then
@@ -954,9 +958,7 @@ function BankLayer:onSelectedEvent(sender,eventType)
 		self.txtBank:setVisible(false)
 		self.txtQian:setVisible(false)
 		self._txtInsure:setVisible(false)
-		self.number_frame:setVisible(false)
-		self.number_label:setVisible(false)
-		self.edit_Score:setVisible(false)
+		self._takesaveNew:setVisible(false)
 		self.all_save:setVisible(false)
 		self.m_textNumber:setVisible(false)
 
@@ -974,9 +976,7 @@ function BankLayer:onSelectedEvent(sender,eventType)
 		self.txtBank:setVisible(false)
 		self.txtQian:setVisible(false)
 		self._txtInsure:setVisible(false)
-		self.number_frame:setVisible(false)
-		self.number_label:setVisible(false)
-		self.edit_Score:setVisible(false)
+		self._takesaveNew:setVisible(false)
 		self.all_save:setVisible(false)
 		self.m_textNumber:setVisible(false)
 		self.m_textNumberJB:setVisible(true)
